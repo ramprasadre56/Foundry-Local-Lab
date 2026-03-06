@@ -1,0 +1,16 @@
+{
+  "name": "foundry-local-workshop-js",
+  "version": "1.0.0",
+  "description": "Foundry Local Workshop - JavaScript Labs",
+  "type": "module",
+  "scripts": {
+    "start": "node foundry-local.mjs",
+    "agent": "node foundry-local-with-agent.mjs",
+    "rag": "node foundry-local-rag.mjs",
+    "multi-agent": "node foundry-local-multi-agent.mjs"
+  },
+  "dependencies": {
+    "foundry-local-sdk": "^0.1.0",
+    "openai": "^4.0.0"
+  }
+}

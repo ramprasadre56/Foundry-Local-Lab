@@ -1,0 +1,6 @@
+# Foundry Local SDK for running local AI models
+foundry-local-sdk>=0.1.0,<1.0.0
+# OpenAI SDK for API compatibility
+openai>=1.0.0,<2.0.0
+# Microsoft Agent Framework
+agent-framework>=0.1.0,<1.0.0
