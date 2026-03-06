@@ -6,7 +6,7 @@
 
 ## Overview
 
-Foundry Local isn't just for text generation — it also supports **speech-to-text** models. In this lab you'll use the **OpenAI Whisper Medium** model to transcribe audio files entirely on your machine. This is ideal for privacy-sensitive scenarios like medical transcription, legal recordings, or personal notes where audio data must never leave your device.
+Foundry Local isn't just for text generation — it also supports **speech-to-text** models. In this lab you'll use the **OpenAI Whisper Medium** model to transcribe audio files entirely on your machine. This is ideal for scenarios like transcribing Zava customer service calls, product review recordings, or workshop planning sessions where audio data must never leave your device.
 
 
 ---
@@ -750,7 +750,7 @@ Try these modifications to deepen your understanding:
 3. **Add output formatting** — the JSON response can include:
    ```json
    {
-     "text": "Doctor: Good morning, how are you feeling today?",
+     "text": "Welcome to Zava Home Improvement. I'd like to learn more about the ProGrip Cordless Drill.",
      "language": "en",
      "duration": 10.5
    }
@@ -793,13 +793,13 @@ Try these modifications to deepen your understanding:
 
 | Concept | What You Learned |
 |---------|-----------------|
-| **Whisper on-device** | Speech-to-text runs entirely locally — ideal for sensitive audio data |
+| **Whisper on-device** | Speech-to-text runs entirely locally — ideal for transcribing Zava customer calls and product reviews on-device |
 | **Version requirement** | Whisper models require Foundry Local **v0.8.101 or earlier** |
 | **Multi-language support** | Python and JS use `client.audio.transcriptions.create()`, C# uses `AudioClient` |
 | **Same OpenAI SDK** | Python/JS reuse the same OpenAI SDK — just a different endpoint method |
 | **WinML package (C#)** | C# uses `Microsoft.AI.Foundry.Local.WinML` for in-process transcription |
 | **CPU-optimized** | The CPU variant (3.05 GB) works on any Windows device without a GPU |
-| **Privacy-first** | Perfect for HIPAA, legal, and other scenarios requiring data residency |
+| **Privacy-first** | Perfect for keeping Zava customer interactions and proprietary product data on-device |
 
 ---
 
