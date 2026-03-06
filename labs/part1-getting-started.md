@@ -112,7 +112,7 @@ foundry model download phi-3.5-mini
 Check which models are already downloaded on your machine:
 
 ```bash
-foundry model list --cached
+foundry cache list
 ```
 
 ### Exercise 4: Understand the Architecture
