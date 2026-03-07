@@ -1,13 +1,23 @@
 """
 Whisper Voice Transcription with Foundry Local
 Transcribes WAV audio files using the OpenAI Whisper model running locally.
+
+Uses the Foundry Local SDK to download and manage the whisper model, then
+runs inference directly with ONNX Runtime and the transformers feature
+extractor. Requires: foundry-local-sdk, onnxruntime, transformers, librosa
+
 Usage: python foundry-local-whisper.py [path-to-wav-file]
 """
 
 import sys
 import os
 import glob
-import openai
+import time
+
+import numpy as np
+import onnxruntime as ort
+import librosa
+from transformers import WhisperFeatureExtractor, WhisperTokenizer
 from foundry_local import FoundryLocalManager
 
 model_alias = "whisper-medium"
@@ -15,7 +25,6 @@ model_alias = "whisper-medium"
 # Default: transcribe all Zava sample WAV files
 samples_dir = os.path.join(os.path.dirname(__file__), "..", "samples", "audio")
 
-# If a specific file is provided as argument, transcribe only that file
 if len(sys.argv) > 1:
     audio_files = [sys.argv[1]]
     for f in audio_files:
@@ -30,32 +39,129 @@ else:
         print("Run 'python samples/audio/generate_samples.py' first to generate them.")
         sys.exit(1)
 
-# Step 1: Bootstrap — starts the service, downloads, and loads the model
-print(f"Initializing Foundry Local with model: {model_alias}...")
+# ---------------------------------------------------------------------------
+# Step 1: Use Foundry Local SDK to ensure the whisper model is downloaded
+# ---------------------------------------------------------------------------
+print(f"Initialising Foundry Local with model: {model_alias}...")
 manager = FoundryLocalManager(model_alias)
-model_id = manager.get_model_info(model_alias).id
-print(f"Model ready: {model_id}")
-print(f"Endpoint: {manager.endpoint}")
+model_info = manager.get_model_info(model_alias)
+cache_location = manager.get_cache_location()
 
-# Step 2: Create the OpenAI client pointing to the local service
-client = openai.OpenAI(
-    base_url=manager.endpoint,
-    api_key=manager.api_key
+# Build the path to the cached ONNX model files
+model_dir = os.path.join(
+    cache_location, "Microsoft",
+    model_info.id.replace(":", "-"),
+    "cpu-fp32"
 )
 
+if not os.path.isdir(model_dir):
+    print(f"Model directory not found: {model_dir}")
+    print("Ensure the whisper model has been downloaded by the SDK.")
+    sys.exit(1)
+
+print(f"Model ready: {model_info.id}")
+print(f"Model path: {model_dir}")
+
+# ---------------------------------------------------------------------------
+# Step 2: Load the encoder and decoder ONNX sessions
+# ---------------------------------------------------------------------------
+print("\nLoading ONNX encoder and decoder...")
+encoder_session = ort.InferenceSession(
+    os.path.join(model_dir, "whisper-medium_encoder_fp32.onnx"),
+    providers=["CPUExecutionProvider"],
+)
+decoder_session = ort.InferenceSession(
+    os.path.join(model_dir, "whisper-medium_decoder_fp32.onnx"),
+    providers=["CPUExecutionProvider"],
+)
+
+# Load the feature extractor and tokeniser from the model directory
+feature_extractor = WhisperFeatureExtractor.from_pretrained(model_dir)
+tokenizer = WhisperTokenizer.from_pretrained(model_dir)
+
+# Whisper decoder dimensions (medium model)
+NUM_LAYERS = 24
+NUM_HEADS = 16
+HEAD_SIZE = 64
+
+# Build the initial decoder token sequence:
+# <|startoftranscript|> <|en|> <|transcribe|> <|notimestamps|>
+sot = tokenizer.convert_tokens_to_ids("<|startoftranscript|>")
+eot = tokenizer.convert_tokens_to_ids("<|endoftext|>")
+notimestamps = tokenizer.convert_tokens_to_ids("<|notimestamps|>")
+forced_ids = tokenizer.get_decoder_prompt_ids(language="en", task="transcribe")
+INITIAL_TOKENS = [sot] + [tid for _, tid in forced_ids] + [notimestamps]
+
+print("Models loaded and ready.\n")
+
+
+def transcribe(audio_path: str) -> str:
+    """Transcribe a single WAV file and return the text."""
+    # Load audio at 16 kHz mono
+    audio, _ = librosa.load(audio_path, sr=16000)
+
+    # Extract log-mel spectrogram features
+    features = feature_extractor(audio, sampling_rate=16000, return_tensors="np")
+    audio_features = features["input_features"].astype(np.float32)
+
+    # Run the encoder
+    encoder_outputs = encoder_session.run(None, {"audio_features": audio_features})
+    cross_kv_list = encoder_outputs[1:]
+
+    # Prepare cross-attention KV cache from encoder
+    cross_kv = {}
+    for i in range(NUM_LAYERS):
+        cross_kv[f"past_key_cross_{i}"] = cross_kv_list[i * 2]
+        cross_kv[f"past_value_cross_{i}"] = cross_kv_list[i * 2 + 1]
+
+    # Initialise empty self-attention KV cache
+    self_kv = {}
+    for i in range(NUM_LAYERS):
+        self_kv[f"past_key_self_{i}"] = np.zeros((1, NUM_HEADS, 0, HEAD_SIZE), dtype=np.float32)
+        self_kv[f"past_value_self_{i}"] = np.zeros((1, NUM_HEADS, 0, HEAD_SIZE), dtype=np.float32)
+
+    # Autoregressive decoding
+    input_ids = np.array([INITIAL_TOKENS], dtype=np.int32)
+    generated = []
+
+    for _ in range(448):
+        feeds = {"input_ids": input_ids}
+        feeds.update(cross_kv)
+        feeds.update(self_kv)
+
+        outputs = decoder_session.run(None, feeds)
+        logits = outputs[0]
+        next_token = int(np.argmax(logits[0, -1, :]))
+
+        if next_token == eot:
+            break
+
+        generated.append(next_token)
+
+        # Update self-attention KV cache
+        for i in range(NUM_LAYERS):
+            self_kv[f"past_key_self_{i}"] = outputs[1 + i * 2]
+            self_kv[f"past_value_self_{i}"] = outputs[2 + i * 2]
+
+        input_ids = np.array([[next_token]], dtype=np.int32)
+
+    return tokenizer.decode(generated, skip_special_tokens=True).strip()
+
+
+# ---------------------------------------------------------------------------
 # Step 3: Transcribe each audio file
+# ---------------------------------------------------------------------------
 for audio_path in audio_files:
     filename = os.path.basename(audio_path)
-    print(f"\n{'=' * 60}")
+    print(f"{'=' * 60}")
     print(f"File: {filename}")
     print("=" * 60)
 
-    with open(audio_path, "rb") as f:
-        result = client.audio.transcriptions.create(
-            model=model_id,
-            file=f
-        )
+    t0 = time.time()
+    text = transcribe(audio_path)
+    elapsed = time.time() - t0
 
-    print(result.text)
+    print(text)
+    print(f"({elapsed:.1f}s)\n")
 
-print(f"\nDone — transcribed {len(audio_files)} file(s).")
+print(f"Done — transcribed {len(audio_files)} file(s).")
