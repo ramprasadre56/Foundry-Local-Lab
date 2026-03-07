@@ -349,7 +349,7 @@ The key insight: **Foundry Local replaces the cloud backend, not the application
 | Concept | What You Learned |
 |---------|-----------------|
 | Production architecture | How to structure a multi-agent app with shared config and separate agents |
-| 4-step model loading | Best practice for initializing Foundry Local with user-visible progress |
+| 4-step model loading | Best practice for initialising Foundry Local with user-visible progress |
 | Agent Specialisation | Each of 4 agents has focused instructions and a specific output format |
 | Streaming generation | Writer yields tokens in real time, enabling responsive UIs |
 | Feedback loops | Editor-driven retry improves output quality without human intervention |

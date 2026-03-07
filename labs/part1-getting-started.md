@@ -6,7 +6,7 @@
 
 [Foundry Local](https://foundrylocal.ai) lets you run open-source AI language models **directly on your computer** - no internet required, no cloud costs, and complete data privacy. It:
 
-- **Downloads and runs models locally** with automatic hardware optimization (GPU, CPU, or NPU)
+- **Downloads and runs models locally** with automatic hardware optimisation (GPU, CPU, or NPU)
 - **Provides an OpenAI-compatible API** so you can use familiar SDKs and tools
 - **Requires no Azure subscription** or sign-up - just install and start building
 
@@ -131,10 +131,12 @@ Foundry Local runs as a **local HTTP service** that exposes an OpenAI-compatible
 
 ## Key Takeaways
 
-- Foundry Local runs AI models **entirely on your device** - no cloud, no API keys, no costs
-- Model **aliases** (like `phi-3.5-mini`) automatically select the best variant for your hardware
-- The Foundry Local service runs on a **dynamic port** - always use the SDK to discover the endpoint
-- You can interact with models via the CLI (`foundry model run`) or programmatically via the SDK
+| Concept | What You Learned |
+|---------|------------------|
+| On-device AI | Foundry Local runs models entirely on your device with no cloud, no API keys, and no costs |
+| Model aliases | Aliases like `phi-3.5-mini` automatically select the best variant for your hardware |
+| Dynamic ports | The service runs on a dynamic port; always use the SDK to discover the endpoint |
+| CLI and SDK | You can interact with models via the CLI (`foundry model run`) or programmatically via the SDK |
 
 ---
 

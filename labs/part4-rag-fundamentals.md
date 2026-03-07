@@ -329,11 +329,11 @@ The overlap works like a sliding window: each new chunk starts 25 tokens before 
 > **Why not other strategies?**
 > - **Sentence-based splitting** produces unpredictable chunk sizes - some safety procedures are single long sentences that wouldn't split well
 > - **Section-aware splitting** (on `##` headings) creates wildly different chunk sizes - some too small, others too large for the model's context window
-> - **Semantic chunking** (embedding-based topic detection) gives the best retrieval quality, but requires a second model in memory alongside Phi-3.5 Mini - risky on hardware with 8–16 GB shared memory
+> - **Semantic chunking** (embedding-based topic detection) gives the best retrieval quality, but requires a second model in memory alongside Phi-3.5 Mini - risky on hardware with 8-16 GB shared memory
 
 ### Stepping Up Retrieval: TF-IDF Vectors
 
-The keyword overlap approach in this lab works, but if you want better retrieval without adding an embedding model, **TF-IDF (Term Frequency–Inverse Document Frequency)** is an excellent middle ground:
+The keyword overlap approach in this lab works, but if you want better retrieval without adding an embedding model, **TF-IDF (Term Frequency-Inverse Document Frequency)** is an excellent middle ground:
 
 ```
 Keyword Overlap  →  TF-IDF Vectors  →  Embedding Models
@@ -345,7 +345,7 @@ Keyword Overlap  →  TF-IDF Vectors  →  Embedding Models
 
 TF-IDF converts each chunk into a numeric vector based on how important each word is within that chunk *relative to all chunks*. At query time, the question is vectorized the same way and compared using cosine similarity. You can implement this with SQLite and pure JavaScript/Python - no vector database, no embedding API.
 
-> **Performance:** TF-IDF cosine similarity over fixed-size chunks typically achieves **~1ms retrieval**, compared to ~100–500ms when an embedding model encodes each query. All 20+ documents can be chunked and indexed in under a second.
+> **Performance:** TF-IDF cosine similarity over fixed-size chunks typically achieves **~1ms retrieval**, compared to ~100-500ms when an embedding model encodes each query. All 20+ documents can be chunked and indexed in under a second.
 
 ### Edge/Compact Mode for Constrained Devices
 
@@ -417,7 +417,7 @@ These design choices combine to deliver responsive RAG on consumer hardware:
 | **Vector store** | None needed | SQLite (single `.db` file) | FAISS, Chroma, Azure AI Search, etc. |
 | **Chunking** | Manual | Fixed-size sliding window (~200 tokens, 25-token overlap) | Semantic or recursive chunking |
 | **Models in memory** | 1 (LLM) | 1 (LLM) | 2+ (embedding + LLM) |
-| **Retrieval latency** | ~5ms | ~1ms | ~100–500ms |
+| **Retrieval latency** | ~5ms | ~1ms | ~100-500ms |
 | **Scale** | 5 documents | Hundreds of documents | Millions of documents |
 
 The patterns you learn here - retrieve, augment, generate - are the same at any scale. The retrieval method improves, but the overall architecture stays identical. The middle column shows what's achievable on-device with lightweight techniques - often the sweet spot for local applications where you trade cloud-scale for privacy, offline capability, and zero latency to external services.
@@ -426,17 +426,19 @@ The patterns you learn here - retrieve, augment, generate - are the same at any 
 
 ## Key Takeaways
 
-- **RAG = Retrieve + Augment + Generate** - give the model the right context and it can answer questions about your data
-- Everything runs **on-device** - no cloud APIs, no vector database subscriptions
-- **Grounding instructions** in the system prompt are critical to prevent hallucination
-- Keyword overlap is a simple but effective starting point for retrieval
-- **TF-IDF + SQLite** is a lightweight upgrade path that keeps retrieval under 1ms with no embedding model
-- **Keep one model in memory** - avoid loading an embedding model alongside the LLM on constrained hardware
-- **Chunk size matters** - ~200 tokens with overlap balances retrieval precision and context window efficiency for small models like Phi-3.5 Mini
-- Consider **edge/compact mode** (fewer chunks, shorter prompts) for very constrained devices
-- The same RAG pattern works for any data source - documents, databases, APIs, wikis
+| Concept | What You Learned |
+|---------|------------------|
+| RAG pattern | Retrieve + Augment + Generate: give the model the right context and it can answer questions about your data |
+| On-device | Everything runs locally with no cloud APIs or vector database subscriptions |
+| Grounding instructions | System prompt constraints are critical to prevent hallucination |
+| Keyword overlap | A simple but effective starting point for retrieval |
+| TF-IDF + SQLite | A lightweight upgrade path that keeps retrieval under 1ms with no embedding model |
+| One model in memory | Avoid loading an embedding model alongside the LLM on constrained hardware |
+| Chunk size | Roughly 200 tokens with overlap balances retrieval precision and context window efficiency |
+| Edge/compact mode | Use fewer chunks and shorter prompts for very constrained devices |
+| Universal pattern | The same RAG architecture works for any data source: documents, databases, APIs, or wikis |
 
-> **Want to see a full on-device RAG application?** Check out [Gas Field Local RAG](https://github.com/leestott/local-rag) - a production-style offline RAG agent built with Foundry Local and Phi-3.5 Mini that demonstrates these optimization patterns with a real-world document set.
+> **Want to see a full on-device RAG application?** Check out [Gas Field Local RAG](https://github.com/leestott/local-rag), a production-style offline RAG agent built with Foundry Local and Phi-3.5 Mini that demonstrates these optimisation patterns with a real-world document set.
 
 ---
 

@@ -443,11 +443,13 @@ Console.WriteLine(response.Value.Content[0].Text);
 
 ## Key Takeaways
 
-- The **Foundry Local SDK** handles the control plane (starting the service, loading models)
-- The **OpenAI SDK** handles the data plane (chat completions, streaming)
-- The service runs on a **dynamic port** - always use `manager.endpoint`, never hardcode URLs
-- The same code pattern works across Python, JavaScript, and C# - only syntax differs
-- You get **full OpenAI API compatibility** so existing OpenAI code works with minimal changes
+| Concept | What You Learned |
+|---------|------------------|
+| Control plane | The Foundry Local SDK handles starting the service and loading models |
+| Data plane | The OpenAI SDK handles chat completions and streaming |
+| Dynamic ports | Always use `manager.endpoint`; never hardcode URLs |
+| Cross-language | The same code pattern works across Python, JavaScript, and C# |
+| OpenAI compatibility | Full OpenAI API compatibility means existing OpenAI code works with minimal changes |
 
 ---
 
