@@ -358,25 +358,6 @@ The key insight: **Foundry Local replaces the cloud backend, not the application
 
 ---
 
-## Workshop Complete!
+## Next Step
 
-Congratulations - you've completed the Foundry Local Workshop! You've gone from installing the CLI to building a production-style multi-agent application that runs entirely on your device.
-
-**What you've built across the workshop:**
-
-| Part | What You Built |
-|------|---------------|
-| 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Mastered the Foundry Local SDK API - service, catalog, cache, model management |
-| 3 | Connected from Python/JS/C# using the SDK with OpenAI |
-| 4 | Built a RAG pipeline with local knowledge retrieval |
-| 5 | Created AI agents with personas and structured output |
-| 6 | Orchestrated multi-agent pipelines with feedback loops |
-| 7 | Explored a production capstone app - the Zava Creative Writer |
-
-**Next steps:**
-- Continue to [Part 8: Voice Transcription with Whisper](part8-whisper-voice-transcription.md) to explore speech-to-text on-device
-- Try different models (`phi-4-mini`, `deepseek-r1-7b`) to compare quality and speed
-- Build a frontend UI for the Zava Writer API (Python version)
-- Create your own multi-agent application for a domain you care about
-- Deploy to the cloud by swapping Foundry Local for Azure AI Foundry - same code, different endpoint
+Continue to [Part 8: Voice Transcription with Whisper](part8-whisper-voice-transcription.md) to explore speech-to-text on-device using the Foundry Local SDK.
