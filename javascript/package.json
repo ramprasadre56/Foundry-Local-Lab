@@ -10,7 +10,7 @@
     "multi-agent": "node foundry-local-multi-agent.mjs"
   },
   "dependencies": {
-    "foundry-local-sdk": "^0.1.0",
+    "foundry-local-sdk": "^0.3.0",
     "openai": "^4.0.0"
   }
 }

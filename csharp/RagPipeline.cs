@@ -78,12 +78,16 @@ public static class RagPipeline
 
         // Step 1: Start the Foundry Local service
         Console.WriteLine("Starting Foundry Local service...");
-        var manager = await FoundryLocalManager.StartServiceAsync();
+        await FoundryLocalManager.CreateAsync(new Configuration { AppName = "FoundryLocalSamples" }, null, default);
+        var manager = FoundryLocalManager.Instance;
+        await manager.StartWebServiceAsync(default);
 
-        // Step 2: Check if the model is already downloaded
-        var cachedModels = await manager.ListCachedModelsAsync();
-        var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-        var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+        // Step 2: Get the model from the catalog
+        var catalog = await manager.GetCatalogAsync(default);
+        var model = await catalog.GetModelAsync(alias, default);
+
+        // Step 3: Check if the model is already downloaded
+        var isCached = await model.IsCachedAsync(default);
 
         if (isCached)
         {
@@ -92,21 +96,21 @@ public static class RagPipeline
         else
         {
             Console.WriteLine($"Downloading model: {alias} (this may take several minutes)...");
-            await manager.DownloadModelAsync(aliasOrModelId: alias);
+            await model.DownloadAsync(null, default);
             Console.WriteLine($"Download complete: {alias}");
         }
 
-        // Step 3: Load the model into memory
+        // Step 4: Load the model into memory
         Console.WriteLine($"Loading model: {alias}...");
-        var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-        Console.WriteLine($"Loaded model: {model?.ModelId}");
+        await model.LoadAsync(default);
+        Console.WriteLine($"Loaded model: {model.Id}");
 
-        var key = new ApiKeyCredential(manager.ApiKey);
+        var key = new ApiKeyCredential("foundry-local");
         var client = new OpenAIClient(key, new OpenAIClientOptions
         {
-            Endpoint = manager.Endpoint
+            Endpoint = new Uri(manager.Urls[0])
         });
-        var chatClient = client.GetChatClient(model?.ModelId);
+        var chatClient = client.GetChatClient(model.Id);
 
         // User question
         var question = "How do I install Foundry Local and what hardware does it support?";

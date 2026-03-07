@@ -92,6 +92,3 @@ if __name__ == "__main__":
         print(chunk, end="", flush=True)
     print()
     print(process(full))
-    assignment = "Write a fun and engaging article that includes the research and product information. The article should be between 800 and 1000 words."
-    result = write(researchContext, research, productContext, products, assignment)
-    print(result)

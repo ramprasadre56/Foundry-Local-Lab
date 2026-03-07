@@ -14,11 +14,13 @@ using System.Text.Json;
 var alias = "phi-3.5-mini";
 
 Console.WriteLine("Starting Foundry Local service...");
-var manager = await FoundryLocalManager.StartServiceAsync();
+await FoundryLocalManager.CreateAsync(new Configuration { AppName = "ZavaCreativeWriter" }, null, default);
+var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var cachedModels = await manager.ListCachedModelsAsync();
-var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+var catalog = await manager.GetCatalogAsync(default);
+var catalogModel = await catalog.GetModelAsync(alias, default);
+var isCached = await catalogModel.IsCachedAsync(default);
 
 if (isCached)
 {
@@ -27,19 +29,19 @@ if (isCached)
 else
 {
     Console.WriteLine($"Downloading model: {alias} (this may take several minutes)...");
-    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    await catalogModel.DownloadAsync(null, default);
     Console.WriteLine($"Download complete: {alias}");
 }
 
 Console.WriteLine($"Loading model: {alias}...");
-var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-var modelId = model?.ModelId ?? alias;
+await catalogModel.LoadAsync(default);
+var modelId = catalogModel.Id;
 Console.WriteLine($"Model ready: {modelId}");
 
-var key = new ApiKeyCredential(manager.ApiKey);
+var key = new ApiKeyCredential("foundry-local");
 var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
 {
-    Endpoint = manager.Endpoint
+    Endpoint = new Uri(manager.Urls[0])
 });
 var chatClient = openAiClient.GetChatClient(modelId);
 
