@@ -6,11 +6,11 @@
 
 ## What Is an AI Agent?
 
-An AI agent wraps a language model with **system instructions** that define its behavior, personality, and constraints. Unlike a single chat completion call, an agent provides:
+An AI agent wraps a language model with **system instructions** that define its behaviour, personality, and constraints. Unlike a single chat completion call, an agent provides:
 
-- **Persona** — a consistent identity ("You are a helpful code reviewer")
-- **Memory** — conversation history across turns
-- **Specialization** — focused behavior driven by well-crafted instructions
+- **Persona** - a consistent identity ("You are a helpful code reviewer")
+- **Memory** - conversation history across turns
+- **Specialisation** - focused behaviour driven by well-crafted instructions
 
 ![ChatAgent Pattern](../images/part4-agent-pattern.png)
 
@@ -18,14 +18,14 @@ An AI agent wraps a language model with **system instructions** that define its 
 
 ## The Microsoft Agent Framework
 
-The **Microsoft Agent Framework** (AGF) provides a standard agent abstraction that works across different model backends. In this workshop we pair it with Foundry Local so everything runs on your machine — no cloud required.
+The **Microsoft Agent Framework** (AGF) provides a standard agent abstraction that works across different model backends. In this workshop we pair it with Foundry Local so everything runs on your machine - no cloud required.
 
 | Concept | Description |
 |---------|-------------|
 | `FoundryLocalClient` | Python: handles service start, model download/load, and creates agents |
 | `client.as_agent()` | Python: creates an agent from the Foundry Local client |
-| `AsAIAgent()` | C#: extension method on `ChatClient` — creates an `AIAgent` |
-| `instructions` | System prompt that shapes the agent's behavior |
+| `AsAIAgent()` | C#: extension method on `ChatClient` - creates an `AIAgent` |
+| `instructions` | System prompt that shapes the agent's behaviour |
 | `name` | Human-readable label, useful in multi-agent scenarios |
 | `agent.run(prompt)` / `RunAsync()` | Sends a user message and returns the agent's response |
 
@@ -35,19 +35,19 @@ The **Microsoft Agent Framework** (AGF) provides a standard agent abstraction th
 
 ## Exercises
 
-### Exercise 1 — Understand the Agent Pattern
+### Exercise 1 - Understand the Agent Pattern
 
 Before writing code, study the key components of an agent:
 
-1. **Model client** — connects to Foundry Local's OpenAI-compatible API
-2. **System instructions** — the "personality" prompt
-3. **Run loop** — send user input, receive output
+1. **Model client** - connects to Foundry Local's OpenAI-compatible API
+2. **System instructions** - the "personality" prompt
+3. **Run loop** - send user input, receive output
 
 > **Think about it:** How do system instructions differ from a regular user message? What happens if you change them?
 
 ---
 
-### Exercise 2 — Run the Single-Agent Example
+### Exercise 2 - Run the Single-Agent Example
 
 <details>
 <summary><strong>🐍 Python</strong></summary>
@@ -258,7 +258,7 @@ await foreach (var update in joker.RunStreamingAsync("Tell me another joke."))
 ```
 
 **Key points:**
-- `AsAIAgent()` is an extension method from `Microsoft.Agents.AI.OpenAI` — no custom `ChatAgent` class needed
+- `AsAIAgent()` is an extension method from `Microsoft.Agents.AI.OpenAI` - no custom `ChatAgent` class needed
 - `RunAsync()` returns the full response; `RunStreamingAsync()` streams token by token
 - Install via `dotnet add package Microsoft.Agents.AI.OpenAI --version 1.0.0-rc3`
 
@@ -266,7 +266,7 @@ await foreach (var update in joker.RunStreamingAsync("Tell me another joke."))
 
 ---
 
-### Exercise 3 — Change the Persona
+### Exercise 3 - Change the Persona
 
 Modify the agent's `instructions` to create a different persona. Try each one and observe how the output changes:
 
@@ -274,7 +274,7 @@ Modify the agent's `instructions` to create a different persona. Try each one an
 |---------|-------------|
 | Code Reviewer | `"You are an expert code reviewer. Provide constructive feedback focused on readability, performance, and correctness."` |
 | Travel Guide | `"You are a friendly travel guide. Give personalized recommendations for destinations, activities, and local cuisine."` |
-| Socratic Tutor | `"You are a Socratic tutor. Never give direct answers — instead, guide the student with thoughtful questions."` |
+| Socratic Tutor | `"You are a Socratic tutor. Never give direct answers - instead, guide the student with thoughtful questions."` |
 | Technical Writer | `"You are a technical writer. Explain concepts clearly and concisely. Use examples. Avoid jargon."` |
 
 **Try it:**
@@ -287,12 +287,12 @@ Modify the agent's `instructions` to create a different persona. Try each one an
 
 ---
 
-### Exercise 4 — Add Multi-Turn Conversation
+### Exercise 4 - Add Multi-Turn Conversation
 
 Extend the example to support a multi-turn chat loop so you can have a back-and-forth conversation with the agent.
 
 <details>
-<summary><strong>🐍 Python — multi-turn loop</strong></summary>
+<summary><strong>🐍 Python - multi-turn loop</strong></summary>
 
 ```python
 import asyncio
@@ -320,7 +320,7 @@ asyncio.run(main())
 </details>
 
 <details>
-<summary><strong>📦 JavaScript — multi-turn loop</strong></summary>
+<summary><strong>📦 JavaScript - multi-turn loop</strong></summary>
 
 ```javascript
 import { OpenAI } from "openai";
@@ -375,7 +375,7 @@ main();
 </details>
 
 <details>
-<summary><strong>💜 C# — multi-turn loop</strong></summary>
+<summary><strong>💜 C# - multi-turn loop</strong></summary>
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
@@ -426,16 +426,16 @@ while (true)
 
 </details>
 
-Notice how the agent remembers previous turns — ask a follow-up question and see the context carry through.
+Notice how the agent remembers previous turns - ask a follow-up question and see the context carry through.
 
 ---
 
-### Exercise 5 — Structured Output
+### Exercise 5 - Structured Output
 
 Instruct the agent to always respond in a specific format (e.g., JSON) and parse the result:
 
 <details>
-<summary><strong>🐍 Python — JSON output</strong></summary>
+<summary><strong>🐍 Python - JSON output</strong></summary>
 
 ```python
 import asyncio
@@ -461,7 +461,7 @@ async def main():
         parsed = json.loads(str(result))
         print(f"Sentiment: {parsed['sentiment']} (confidence: {parsed['confidence']})")
     except json.JSONDecodeError:
-        print("Agent did not return valid JSON — try refining the instructions.")
+        print("Agent did not return valid JSON - try refining the instructions.")
 
 asyncio.run(main())
 ```
@@ -469,7 +469,7 @@ asyncio.run(main())
 </details>
 
 <details>
-<summary><strong>💜 C# — JSON output</strong></summary>
+<summary><strong>💜 C# - JSON output</strong></summary>
 
 ```csharp
 using System.Text.Json;
@@ -493,7 +493,7 @@ try
 }
 catch (JsonException)
 {
-    Console.WriteLine("Agent did not return valid JSON — try refining the instructions.");
+    Console.WriteLine("Agent did not return valid JSON - try refining the instructions.");
 }
 ```
 
@@ -508,13 +508,13 @@ catch (JsonException)
 | Concept | What You Learned |
 |---------|-----------------|
 | Agent vs. raw LLM call | An agent wraps a model with instructions and memory |
-| System instructions | The most important lever for controlling agent behavior |
+| System instructions | The most important lever for controlling agent behaviour |
 | Multi-turn conversation | Agents can carry context across multiple user interactions |
 | Structured output | Instructions can enforce output format (JSON, markdown, etc.) |
-| Local execution | Everything runs on-device via Foundry Local — no cloud required |
+| Local execution | Everything runs on-device via Foundry Local - no cloud required |
 
 ---
 
 ## Next Steps
 
-In **[Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)**, you'll combine multiple agents into a coordinated pipeline where each agent has a specialized role.
+In **[Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)**, you'll combine multiple agents into a coordinated pipeline where each agent has a specialised role.

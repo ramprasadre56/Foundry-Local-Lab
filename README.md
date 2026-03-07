@@ -2,11 +2,11 @@
   <img src="https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg" alt="Foundry Local" width="280" />
 </p>
 
-# Foundry Local Workshop — Build AI Apps On-Device
+# Foundry Local Workshop - Build AI Apps On-Device
 
 A hands-on workshop for running language models on your own machine and building intelligent applications with [Foundry Local](https://foundrylocal.ai) and the [Microsoft Agent Framework](https://learn.microsoft.com/en-us/agent-framework/).
 
-> **What is Foundry Local?** Foundry Local is a lightweight runtime that lets you download, manage, and serve language models entirely on your hardware. It exposes an **OpenAI-compatible API** so any tool or SDK that speaks OpenAI can connect — no cloud account required.
+> **What is Foundry Local?** Foundry Local is a lightweight runtime that lets you download, manage, and serve language models entirely on your hardware. It exposes an **OpenAI-compatible API** so any tool or SDK that speaks OpenAI can connect - no cloud account required.
 
 ---
 
@@ -22,8 +22,8 @@ By the end of this workshop you will be able to:
 | 4 | Build a Retrieval-Augmented Generation (RAG) pipeline that grounds answers in your own data |
 | 5 | Create AI agents with persistent instructions and personas |
 | 6 | Orchestrate multi-agent workflows with feedback loops |
-| 7 | Explore a production capstone app — the Zava Creative Writer |
-| 8 | Transcribe audio with Whisper — speech-to-text on-device using the Foundry Local SDK |
+| 7 | Explore a production capstone app - the Zava Creative Writer |
+| 8 | Transcribe audio with Whisper - speech-to-text on-device using the Foundry Local SDK |
 
 ---
 
@@ -69,7 +69,7 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 - What is Foundry Local and how it works
 - Installing the CLI on Windows and macOS
-- Exploring models — listing, downloading, running
+- Exploring models - listing, downloading, running
 - Understanding model aliases and dynamic ports
 
 ---
@@ -163,11 +163,11 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 7: Zava Creative Writer — Capstone Application
+### Part 7: Zava Creative Writer - Capstone Application
 
 **Lab guide:** [`labs/part7-zava-creative-writer.md`](labs/part7-zava-creative-writer.md)
 
-- A production-style multi-agent app with 4 specialized agents
+- A production-style multi-agent app with 4 specialised agents
 - Sequential pipeline with evaluator-driven feedback loops
 - Streaming output, product catalog search, structured JSON hand-offs
 - Full implementation in Python (FastAPI), JavaScript (Node.js CLI), and C# (.NET console)
@@ -187,11 +187,11 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 **Lab guide:** [`labs/part8-whisper-voice-transcription.md`](labs/part8-whisper-voice-transcription.md)
 
 - Speech-to-text transcription using OpenAI Whisper running locally
-- Privacy-first audio processing — audio never leaves your device
+- Privacy-first audio processing - audio never leaves your device
 - Python, JavaScript, and C# tracks with `client.audio.transcriptions.create()` (Python/JS) and `AudioClient.TranscribeAudioAsync()` (C#)
 - Includes Zava-themed sample audio files for hands-on practice
 
-> **Note:** This lab uses the **Foundry Local SDK** to programmatically download and load the Whisper model, then sends audio to the local OpenAI-compatible endpoint for transcription. The Whisper model (`whisper`) is listed in the Foundry Local catalog and runs entirely on-device — no cloud API keys or network access required.
+> **Note:** This lab uses the **Foundry Local SDK** to programmatically download and load the Whisper model, then sends audio to the local OpenAI-compatible endpoint for transcription. The Whisper model (`whisper`) is listed in the Foundry Local catalog and runs entirely on-device - no cloud API keys or network access required.
 
 ---
 
@@ -248,9 +248,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 | Foundry Local website | [foundrylocal.ai](https://foundrylocal.ai) |
 | Model catalog | [foundrylocal.ai/models](https://www.foundrylocal.ai/models) |
 | Foundry Local GitHub | [github.com/microsoft/foundry-local](https://github.com/microsoft/foundry-local) |
-| Getting started guide | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
-| Foundry Local SDK Reference | [Microsoft Learn — SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
-| Microsoft Agent Framework | [Microsoft Learn — Agent Framework](https://learn.microsoft.com/en-us/agent-framework/) |
+| Getting started guide | [Microsoft Learn - Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
+| Foundry Local SDK Reference | [Microsoft Learn - SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
+| Microsoft Agent Framework | [Microsoft Learn - Agent Framework](https://learn.microsoft.com/en-us/agent-framework/) |
 | OpenAI Whisper | [github.com/openai/whisper](https://github.com/openai/whisper) |
 
 ---

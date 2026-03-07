@@ -2,11 +2,11 @@
 
 # Part 2: Foundry Local SDK Deep Dive
 
-> **Goal:** Master the Foundry Local SDK to manage models, services, and caching programmatically — and understand why the SDK is the recommended approach over the CLI for building applications.
+> **Goal:** Master the Foundry Local SDK to manage models, services, and caching programmatically - and understand why the SDK is the recommended approach over the CLI for building applications.
 
 ## Overview
 
-In Part 1 you used the **Foundry Local CLI** to download and run models interactively. The CLI is great for exploration, but when you build real applications you need **programmatic control**. The Foundry Local SDK gives you that — it manages the **control plane** (starting the service, discovering models, downloading, loading) so your application code can focus on the **data plane** (sending prompts, receiving completions).
+In Part 1 you used the **Foundry Local CLI** to download and run models interactively. The CLI is great for exploration, but when you build real applications you need **programmatic control**. The Foundry Local SDK gives you that - it manages the **control plane** (starting the service, discovering models, downloading, loading) so your application code can focus on the **data plane** (sending prompts, receiving completions).
 
 This lab teaches you the full SDK API surface across Python, JavaScript, and C#. By the end you'll understand every method available and when to use each one.
 
@@ -34,7 +34,7 @@ By the end of this lab you will be able to:
 
 ---
 
-## Concept: SDK vs CLI — Why Use the SDK?
+## Concept: SDK vs CLI - Why Use the SDK?
 
 | Aspect | CLI (`foundry` command) | SDK (`foundry-local-sdk`) |
 |--------|------------------------|--------------------------|
@@ -46,7 +46,7 @@ By the end of this lab you will be able to:
 | **Automation** | Shell scripts | Native language integration |
 | **Deployment** | Requires CLI on end-user machine | C# SDK can be self-contained (no CLI needed) |
 
-> **Key insight:** The SDK handles the entire lifecycle — starting the service, checking the cache, downloading missing models, loading them, and discovering the endpoint — in a few lines of code. Your application doesn't need to parse CLI output or manage subprocesses.
+> **Key insight:** The SDK handles the entire lifecycle - starting the service, checking the cache, downloading missing models, loading them, and discovering the endpoint - in a few lines of code. Your application doesn't need to parse CLI output or manage subprocesses.
 
 ---
 
@@ -178,7 +178,7 @@ for model in catalog:
     print(f"    Device: {model.device_type}, Provider: {model.publisher}")
 ```
 
-#### Python SDK — Service Management Methods
+#### Python SDK - Service Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -188,7 +188,7 @@ for model in catalog:
 | `endpoint` | `@property -> str` | The API endpoint (service URI + `/v1`) |
 | `api_key` | `@property -> str` | API key (from env or default placeholder) |
 
-#### Python SDK — Catalog Management Methods
+#### Python SDK - Catalog Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -218,7 +218,7 @@ for (const model of catalog) {
 }
 ```
 
-#### JavaScript SDK — Service Management Methods
+#### JavaScript SDK - Service Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -229,7 +229,7 @@ for (const model of catalog) {
 | `endpoint` | `string` | The API endpoint (serviceUrl + `/v1`) |
 | `apiKey` | `string` | API key (placeholder for local) |
 
-#### JavaScript SDK — Catalog Management Methods
+#### JavaScript SDK - Catalog Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -277,16 +277,16 @@ foreach (var model in models)
 }
 ```
 
-#### C# SDK — Key Classes
+#### C# SDK - Key Classes
 
 | Class | Purpose |
 |-------|---------|
 | `Configuration` | Set app name, log level, cache dir, web server URLs |
-| `FoundryLocalManager` | Main entry point — created via `CreateAsync()`, accessed via `.Instance` |
+| `FoundryLocalManager` | Main entry point - created via `CreateAsync()`, accessed via `.Instance` |
 | `Catalog` | Browse, search, and get models from the catalog |
-| `Model` | Represents a specific model — download, load, get clients |
+| `Model` | Represents a specific model - download, load, get clients |
 
-#### C# SDK — Manager and Catalog Methods
+#### C# SDK - Manager and Catalog Methods
 
 | Method | Description |
 |--------|-------------|
@@ -298,7 +298,7 @@ foreach (var model in models)
 | `catalog.GetCachedModelsAsync()` | List downloaded models |
 | `catalog.GetLoadedModelsAsync()` | List currently loaded models |
 
-> **C# Architecture Note:** The C# SDK v0.8.0+ redesign makes the application **self-contained** — it doesn't require the Foundry Local CLI on the end-user's machine. The SDK handles model management and inference natively.
+> **C# Architecture Note:** The C# SDK v0.8.0+ redesign makes the application **self-contained** - it doesn't require the Foundry Local CLI on the end-user's machine. The SDK handles model management and inference natively.
 
 </details>
 
@@ -335,12 +335,12 @@ print(f"Loaded: {loaded.id}")
 print(f"Endpoint: {manager.endpoint}")
 
 # Option B: One-liner bootstrap (recommended)
-# Pass alias to constructor — it starts the service, downloads, and loads automatically
+# Pass alias to constructor - it starts the service, downloads, and loads automatically
 manager = FoundryLocalManager(alias)
 print(f"Ready! Endpoint: {manager.endpoint}")
 ```
 
-#### Python — Model Management Methods
+#### Python - Model Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -349,7 +349,7 @@ print(f"Ready! Endpoint: {manager.endpoint}")
 | `unload_model()` | `(alias_or_model_id, force=False) -> None` | Unload a model from the server |
 | `list_loaded_models()` | `() -> list[FoundryModelInfo]` | List all currently loaded models |
 
-#### Python — Cache Management Methods
+#### Python - Cache Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -394,7 +394,7 @@ const model = await manager2.init(alias);
 console.log(`Ready! Model: ${model.id}, Endpoint: ${manager2.endpoint}`);
 ```
 
-#### JavaScript — Model Management Methods
+#### JavaScript - Model Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -403,7 +403,7 @@ console.log(`Ready! Model: ${model.id}, Endpoint: ${manager2.endpoint}`);
 | `unloadModel()` | `(aliasOrModelId, force?) => Promise<void>` | Unload from inference server |
 | `listLoadedModels()` | `() => Promise<FoundryModelInfo[]>` | List all loaded models |
 
-#### JavaScript — Cache Management Methods
+#### JavaScript - Cache Management Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
@@ -464,7 +464,7 @@ await model.LoadAsync();
 Console.WriteLine($"Model loaded: {model.SelectedVariant?.Info.ModelId}");
 ```
 
-#### C# — Model Methods
+#### C# - Model Methods
 
 | Method | Description |
 |--------|-------------|
@@ -666,12 +666,12 @@ console.log(`Loaded after unload: ${loaded.length}`);
 Each language provides a shortcut to start the service and load a model in one call. These are the **recommended patterns** for most applications.
 
 <details>
-<summary><h3>🐍 Python — Constructor Bootstrap</h3></summary>
+<summary><h3>🐍 Python - Constructor Bootstrap</h3></summary>
 
 ```python
 from foundry_local import FoundryLocalManager
 
-# Pass an alias to the constructor — it handles everything:
+# Pass an alias to the constructor - it handles everything:
 # 1. Starts the service if not running
 # 2. Downloads the model if not cached
 # 3. Loads the model into the inference server
@@ -682,17 +682,17 @@ print(f"Endpoint: {manager.endpoint}")
 print(f"Model ID: {manager.get_model_info('phi-3.5-mini').id}")
 ```
 
-The `bootstrap` parameter (default `True`) controls this behavior. Set `bootstrap=False` if you want manual control:
+The `bootstrap` parameter (default `True`) controls this behaviour. Set `bootstrap=False` if you want manual control:
 
 ```python
-# Manual mode — nothing happens automatically
+# Manual mode - nothing happens automatically
 manager = FoundryLocalManager(bootstrap=False)
 ```
 
 </details>
 
 <details>
-<summary><h3>📘 JavaScript — `init()` Method</h3></summary>
+<summary><h3>📘 JavaScript - `init()` Method</h3></summary>
 
 ```javascript
 import { FoundryLocalManager } from "foundry-local-sdk";
@@ -720,7 +720,7 @@ await manager.init(); // Starts service only, no model loaded
 </details>
 
 <details>
-<summary><h3>💜 C# — `CreateAsync()` + Catalog</h3></summary>
+<summary><h3>💜 C# - `CreateAsync()` + Catalog</h3></summary>
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
@@ -783,7 +783,7 @@ print(f"Execution provider: {info.execution_provider}")
 print(f"Device type: {info.device_type}")
 ```
 
-> **Tip:** Always use aliases in your application code. When you deploy to a user's machine, the SDK picks the optimal variant at runtime — CUDA on NVIDIA, QNN on Qualcomm, CPU elsewhere.
+> **Tip:** Always use aliases in your application code. When you deploy to a user's machine, the SDK picks the optimal variant at runtime - CUDA on NVIDIA, QNN on Qualcomm, CPU elsewhere.
 
 ---
 
@@ -917,12 +917,12 @@ const loaded = await manager.listLoadedModels();
 
 | Concept | What You Learned |
 |---------|-----------------|
-| **SDK vs CLI** | The SDK provides programmatic control — essential for applications |
+| **SDK vs CLI** | The SDK provides programmatic control - essential for applications |
 | **Control plane** | The SDK manages services, models, and caching |
-| **Dynamic ports** | Always use `manager.endpoint` — never hardcode a port |
+| **Dynamic ports** | Always use `manager.endpoint` - never hardcode a port |
 | **Aliases** | Use aliases for automatic hardware-optimal model selection |
 | **Quick-start** | Python: `FoundryLocalManager(alias)`, JS: `manager.init(alias)` |
-| **C# redesign** | v0.8.0+ is self-contained — no CLI needed on end-user machines |
+| **C# redesign** | v0.8.0+ is self-contained - no CLI needed on end-user machines |
 | **Model lifecycle** | Catalog → Download → Load → Use → Unload |
 | **FoundryModelInfo** | Rich metadata: task, device, size, license, tool calling support |
 
@@ -932,10 +932,10 @@ const loaded = await manager.listLoadedModels();
 
 | Resource | Link |
 |----------|------|
-| SDK Reference (all languages) | [Microsoft Learn — Foundry Local SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
-| Integrate with inference SDKs | [Microsoft Learn — Inference SDK Integration](https://learn.microsoft.com/en-us/azure/foundry-local/how-to/how-to-integrate-with-inference-sdks) |
+| SDK Reference (all languages) | [Microsoft Learn - Foundry Local SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
+| Integrate with inference SDKs | [Microsoft Learn - Inference SDK Integration](https://learn.microsoft.com/en-us/azure/foundry-local/how-to/how-to-integrate-with-inference-sdks) |
 | C# SDK API Reference | [Foundry Local C# API Reference](https://aka.ms/fl-csharp-api-ref) |
-| C# SDK Samples | [GitHub — Foundry Local SDK Samples](https://aka.ms/foundrylocalSDK) |
+| C# SDK Samples | [GitHub - Foundry Local SDK Samples](https://aka.ms/foundrylocalSDK) |
 | Foundry Local website | [foundrylocal.ai](https://foundrylocal.ai) |
 
 ---

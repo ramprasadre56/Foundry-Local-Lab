@@ -4,11 +4,11 @@
 
 ## What is Foundry Local?
 
-[Foundry Local](https://foundrylocal.ai) lets you run open-source AI language models **directly on your computer** — no internet required, no cloud costs, and complete data privacy. It:
+[Foundry Local](https://foundrylocal.ai) lets you run open-source AI language models **directly on your computer** - no internet required, no cloud costs, and complete data privacy. It:
 
 - **Downloads and runs models locally** with automatic hardware optimization (GPU, CPU, or NPU)
 - **Provides an OpenAI-compatible API** so you can use familiar SDKs and tools
-- **Requires no Azure subscription** or sign-up — just install and start building
+- **Requires no Azure subscription** or sign-up - just install and start building
 
 Think of it as having your own private AI that runs entirely on your machine.
 
@@ -34,9 +34,9 @@ By the end of this lab you will be able to:
 | **Disk Space** | 5 GB (for models) | 10 GB |
 | **CPU** | 4 cores | 8+ cores |
 | **GPU** | Optional | NVIDIA with CUDA 11.8+ |
-| **OS** | Windows 10/11 (x64/ARM), Windows Server 2025, macOS 13+ | — |
+| **OS** | Windows 10/11 (x64/ARM), Windows Server 2025, macOS 13+ | - |
 
-> **Note:** Foundry Local automatically selects the best model variant for your hardware. If you have an NVIDIA GPU, it uses CUDA acceleration. If you have a Qualcomm NPU, it uses that. Otherwise it falls back to an optimized CPU variant.
+> **Note:** Foundry Local automatically selects the best model variant for your hardware. If you have an NVIDIA GPU, it uses CUDA acceleration. If you have a Qualcomm NPU, it uses that. Otherwise it falls back to an optimised CPU variant.
 
 ### Install Foundry Local CLI
 
@@ -64,19 +64,19 @@ foundry --version
 
 ### Exercise 1: Explore Available Models
 
-Foundry Local includes a catalog of pre-optimized open-source models. List them:
+Foundry Local includes a catalog of pre-optimised open-source models. List them:
 
 ```bash
 foundry model list
 ```
 
 You'll see models like:
-- `phi-3.5-mini` — Microsoft's 3.8B parameter model (fast, good quality)
-- `phi-4-mini` — Newer, more capable Phi model
-- `qwen2.5-0.5b` — Very small and fast (good for low-resource devices)
-- `deepseek-r1-7b` — Strong reasoning model
+- `phi-3.5-mini` - Microsoft's 3.8B parameter model (fast, good quality)
+- `phi-4-mini` - Newer, more capable Phi model
+- `qwen2.5-0.5b` - Very small and fast (good for low-resource devices)
+- `deepseek-r1-7b` - Strong reasoning model
 
-> **What is a model alias?** Aliases like `phi-3.5-mini` are shortcuts. When you use an alias, Foundry Local automatically downloads the best variant for your specific hardware (CUDA for NVIDIA GPUs, CPU-optimized otherwise). You never need to worry about picking the right variant.
+> **What is a model alias?** Aliases like `phi-3.5-mini` are shortcuts. When you use an alias, Foundry Local automatically downloads the best variant for your specific hardware (CUDA for NVIDIA GPUs, CPU-optimised otherwise). You never need to worry about picking the right variant.
 
 ### Exercise 2: Run Your First Model
 
@@ -131,9 +131,9 @@ Foundry Local runs as a **local HTTP service** that exposes an OpenAI-compatible
 
 ## Key Takeaways
 
-- Foundry Local runs AI models **entirely on your device** — no cloud, no API keys, no costs
+- Foundry Local runs AI models **entirely on your device** - no cloud, no API keys, no costs
 - Model **aliases** (like `phi-3.5-mini`) automatically select the best variant for your hardware
-- The Foundry Local service runs on a **dynamic port** — always use the SDK to discover the endpoint
+- The Foundry Local service runs on a **dynamic port** - always use the SDK to discover the endpoint
 - You can interact with models via the CLI (`foundry model run`) or programmatically via the SDK
 
 ---

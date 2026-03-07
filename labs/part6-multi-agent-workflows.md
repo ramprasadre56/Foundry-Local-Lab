@@ -2,11 +2,11 @@
 
 # Part 6: Multi-Agent Workflows
 
-> **Goal:** Combine multiple specialized agents into coordinated pipelines that divide complex tasks among collaborating agents — all running locally with Foundry Local.
+> **Goal:** Combine multiple specialised agents into coordinated pipelines that divide complex tasks among collaborating agents - all running locally with Foundry Local.
 
 ## Why Multi-Agent?
 
-A single agent can handle many tasks, but complex workflows benefit from **specialization**. Instead of one agent trying to research, write, and edit simultaneously, you break the work into focused roles:
+A single agent can handle many tasks, but complex workflows benefit from **Specialisation**. Instead of one agent trying to research, write, and edit simultaneously, you break the work into focused roles:
 
 ![Multi-Agent Workflow](../images/part5-multi-agent-flow.png)
 
@@ -21,7 +21,7 @@ A single agent can handle many tasks, but complex workflows benefit from **speci
 
 ## Exercises
 
-### Exercise 1 — Run the Multi-Agent Pipeline
+### Exercise 1 - Run the Multi-Agent Pipeline
 
 The workshop includes a complete Researcher → Writer → Editor workflow.
 
@@ -67,7 +67,7 @@ npm install
 node foundry-local-multi-agent.mjs
 ```
 
-**Same three-stage pipeline** — Researcher → Writer → Editor.
+**Same three-stage pipeline** - Researcher → Writer → Editor.
 
 </details>
 
@@ -85,13 +85,13 @@ dotnet restore
 dotnet run multi
 ```
 
-**Same three-stage pipeline** — Researcher → Writer → Editor.
+**Same three-stage pipeline** - Researcher → Writer → Editor.
 
 </details>
 
 ---
 
-### Exercise 2 — Anatomy of the Pipeline
+### Exercise 2 - Anatomy of the Pipeline
 
 Study how agents are defined and connected:
 
@@ -100,14 +100,14 @@ Study how agents are defined and connected:
 All agents share the same Foundry Local model:
 
 ```python
-# Python — FoundryLocalClient handles everything
+# Python - FoundryLocalClient handles everything
 from agent_framework.microsoft import FoundryLocalClient
 
 client = FoundryLocalClient(model_id="phi-4-mini")
 ```
 
 ```javascript
-// JavaScript — OpenAI SDK pointed at Foundry Local
+// JavaScript - OpenAI SDK pointed at Foundry Local
 const client = new OpenAI({
   baseURL: manager.endpoint,
   apiKey: manager.apiKey,
@@ -115,7 +115,7 @@ const client = new OpenAI({
 ```
 
 ```csharp
-// C# — OpenAIClient pointed at Foundry Local
+// C# - OpenAIClient pointed at Foundry Local
 var key = new ApiKeyCredential(manager.ApiKey);
 var client = new OpenAIClient(key, new OpenAIClientOptions
 {
@@ -124,33 +124,33 @@ var client = new OpenAIClient(key, new OpenAIClientOptions
 var chatClient = client.GetChatClient(model?.ModelId);
 ```
 
-**2. Specialized instructions**
+**2. specialised instructions**
 
 Each agent has a distinct persona:
 
 | Agent | Instructions (summary) |
 |-------|----------------------|
-| Researcher | "Provide key facts, statistics, and background. Organize as bullet points." |
+| Researcher | "Provide key facts, statistics, and background. Organise as bullet points." |
 | Writer | "Write an engaging blog post (3-4 paragraphs) from the research notes. Don't invent facts." |
 | Editor | "Review for clarity, grammar, and factual consistency. Verdict: ACCEPT or REVISE." |
 
 **3. Data flows between agents**
 
 ```python
-# Step 1 — output from researcher becomes input to writer
+# Step 1 - output from researcher becomes input to writer
 research_result = await researcher.run(f"Research: {topic}")
 
-# Step 2 — output from writer becomes input to editor
+# Step 2 - output from writer becomes input to editor
 writer_result = await writer.run(f"Write using:\n{research_result}")
 
-# Step 3 — editor reviews both research and article
+# Step 3 - editor reviews both research and article
 editor_result = await editor.run(
     f"Research:\n{research_result}\n\nArticle:\n{writer_result}"
 )
 ```
 
 ```csharp
-// C# — same pattern, async calls with AIAgent
+// C# - same pattern, async calls with AIAgent
 var researchNotes = await researcher.RunAsync(
     $"Research the following topic and provide key facts:\n{topic}");
 
@@ -163,11 +163,11 @@ var verdict = await editor.RunAsync(
     $"Article:\n{draft}");
 ```
 
-> **Key insight:** Each agent receives the cumulative context from previous agents. The editor sees both the original research and the draft — this lets it check factual consistency.
+> **Key insight:** Each agent receives the cumulative context from previous agents. The editor sees both the original research and the draft - this lets it check factual consistency.
 
 ---
 
-### Exercise 3 — Add a Fourth Agent
+### Exercise 3 - Add a Fourth Agent
 
 Extend the pipeline by adding a new agent. Choose one:
 
@@ -178,7 +178,7 @@ Extend the pipeline by adding a new agent. Choose one:
 | **Social Media** | Create promotional posts | `"Create 3 social media posts promoting this article: one for Twitter (280 chars), one for LinkedIn (professional tone), one for Instagram (casual with emoji suggestions)."` |
 
 <details>
-<summary><strong>🐍 Python — adding a Headline Writer</strong></summary>
+<summary><strong>🐍 Python - adding a Headline Writer</strong></summary>
 
 ```python
 headline_agent = client.as_agent(
@@ -200,7 +200,7 @@ print(f"\n--- Headlines ---\n{headline_result}")
 </details>
 
 <details>
-<summary><strong>📦 JavaScript — adding a Headline Writer</strong></summary>
+<summary><strong>📦 JavaScript - adding a Headline Writer</strong></summary>
 
 ```javascript
 const headlineAgent = new ChatAgent({
@@ -222,7 +222,7 @@ console.log(`\n--- Headlines ---\n${headlineResult.text}`);
 </details>
 
 <details>
-<summary><strong>💜 C# — adding a Headline Writer</strong></summary>
+<summary><strong>💜 C# - adding a Headline Writer</strong></summary>
 
 ```csharp
 AIAgent headlineAgent = chatClient.AsAIAgent(
@@ -243,20 +243,20 @@ Console.WriteLine($"\n--- Headlines ---\n{headlines}");
 
 ---
 
-### Exercise 4 — Design Your Own Workflow
+### Exercise 4 - Design Your Own Workflow
 
 Design a multi-agent pipeline for a different domain. Here are some ideas:
 
 | Domain | Agents | Flow |
 |--------|--------|------|
-| **Code Review** | Analyzer → Reviewer → Summarizer | Analyze code structure → review for issues → produce summary report |
+| **Code Review** | Analyser → Reviewer → Summariser | Analyse code structure → review for issues → produce summary report |
 | **Customer Support** | Classifier → Responder → QA | Classify ticket → draft response → check quality |
 | **Education** | Quiz Maker → Student Simulator → Grader | Generate quiz → simulate answers → grade and explain |
-| **Data Analysis** | Interpreter → Analyst → Reporter | Interpret data request → analyze patterns → write report |
+| **Data Analysis** | Interpreter → Analyst → Reporter | Interpret data request → analyse patterns → write report |
 
 **Steps:**
 1. Define 3+ agents with distinct `instructions`
-2. Decide the data flow — what does each agent receive and produce?
+2. Decide the data flow - what does each agent receive and produce?
 3. Implement the pipeline using the patterns from Exercises 1-3
 4. Add a feedback loop if one agent should evaluate another's work
 
@@ -290,7 +290,7 @@ All agents share a single `foundry_config` so they use the same model and endpoi
 
 | Concept | What You Learned |
 |---------|-----------------|
-| Agent specialization | Each agent does one thing well with focused instructions |
+| Agent Specialisation | Each agent does one thing well with focused instructions |
 | Data hand-offs | Output from one agent becomes input to the next |
 | Feedback loops | An evaluator can trigger retries for higher quality |
 | Structured output | JSON-formatted responses enable reliable agent-to-agent communication |
@@ -301,4 +301,4 @@ All agents share a single `foundry_config` so they use the same model and endpoi
 
 ## Next Steps
 
-Continue to [Part 7: Zava Creative Writer — Capstone Application](part7-zava-creative-writer.md) to explore a production-style multi-agent app with 4 specialized agents, streaming output, product search, and feedback loops — available in Python, JavaScript, and C#.
+Continue to [Part 7: Zava Creative Writer - Capstone Application](part7-zava-creative-writer.md) to explore a production-style multi-agent app with 4 specialised agents, streaming output, product search, and feedback loops - available in Python, JavaScript, and C#.

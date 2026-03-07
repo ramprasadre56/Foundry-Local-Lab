@@ -1,10 +1,10 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 7: Zava Creative Writer — Capstone Application
+# Part 7: Zava Creative Writer - Capstone Application
 
-> **Goal:** Explore a production-style multi-agent application where four specialized agents collaborate to produce magazine-quality articles for Zava Retail DIY — running entirely on your device with Foundry Local.
+> **Goal:** Explore a production-style multi-agent application where four specialised agents collaborate to produce magazine-quality articles for Zava Retail DIY - running entirely on your device with Foundry Local.
 
-This is the **capstone lab** of the workshop. It brings together everything you've learned — SDK integration (Part 3), retrieval from local data (Part 4), agent personas (Part 5), and multi-agent orchestration (Part 6) — into a complete application available in **Python**, **JavaScript**, and **C#**.
+This is the **capstone lab** of the workshop. It brings together everything you've learned - SDK integration (Part 3), retrieval from local data (Part 4), agent personas (Part 5), and multi-agent orchestration (Part 6) - into a complete application available in **Python**, **JavaScript**, and **C#**.
 
 ---
 
@@ -14,7 +14,7 @@ This is the **capstone lab** of the workshop. It brings together everything you'
 |---------|----------------------------|
 | 4-step model loading | Shared config module bootstraps Foundry Local |
 | RAG-style retrieval | Product agent searches a local catalog |
-| Agent specialization | 4 agents with distinct system prompts |
+| Agent Specialisation | 4 agents with distinct system prompts |
 | Streaming output | Writer yields tokens in real-time |
 | Structured hand-offs | Researcher → JSON, Editor → JSON decision |
 | Feedback loops | Editor can trigger re-execution (max 2 retries) |
@@ -56,12 +56,12 @@ The Zava Creative Writer uses a **sequential pipeline with evaluator-driven feed
 
 ## Exercises
 
-### Exercise 1 — Run the Zava Creative Writer
+### Exercise 1 - Run the Zava Creative Writer
 
 Choose your language and run the application:
 
 <details>
-<summary><strong>🐍 Python — FastAPI Web Service</strong></summary>
+<summary><strong>🐍 Python - FastAPI Web Service</strong></summary>
 
 The Python version runs as a **web service** with a REST API, demonstrating how to build a production backend.
 
@@ -99,7 +99,7 @@ The response streams back as newline-delimited JSON messages showing each agent'
 </details>
 
 <details>
-<summary><strong>📦 JavaScript — Node.js CLI</strong></summary>
+<summary><strong>📦 JavaScript - Node.js CLI</strong></summary>
 
 The JavaScript version runs as a **CLI application**, printing agent progress and the article directly to the console.
 
@@ -123,7 +123,7 @@ You'll see:
 </details>
 
 <details>
-<summary><strong>💜 C# — .NET Console App</strong></summary>
+<summary><strong>💜 C# - .NET Console App</strong></summary>
 
 The C# version runs as a **.NET console application** with the same pipeline and streaming output.
 
@@ -138,13 +138,13 @@ dotnet restore
 dotnet run
 ```
 
-Same output pattern as the JavaScript version — agent status messages, streamed article, and editor verdict.
+Same output pattern as the JavaScript version - agent status messages, streamed article, and editor verdict.
 
 </details>
 
 ---
 
-### Exercise 2 — Study the Code Structure
+### Exercise 2 - Study the Code Structure
 
 Each language implementation has the same logical components. Compare the structures:
 
@@ -180,12 +180,12 @@ Each language implementation has the same logical components. Compare the struct
 
 ---
 
-### Exercise 3 — Trace the Shared Configuration
+### Exercise 3 - Trace the Shared Configuration
 
 Every agent in the pipeline shares a single Foundry Local model client. Study how this is set up in each language:
 
 <details>
-<summary><strong>🐍 Python — foundry_config.py</strong></summary>
+<summary><strong>🐍 Python - foundry_config.py</strong></summary>
 
 ```python
 from foundry_local import FoundryLocalManager
@@ -217,7 +217,7 @@ All agents import `from foundry_config import client, model_id`.
 </details>
 
 <details>
-<summary><strong>📦 JavaScript — foundryConfig.mjs</strong></summary>
+<summary><strong>📦 JavaScript - foundryConfig.mjs</strong></summary>
 
 ```javascript
 import { FoundryLocalManager } from "foundry-local-sdk";
@@ -244,7 +244,7 @@ All agents import `{ client, modelId } from "./foundryConfig.mjs"`.
 </details>
 
 <details>
-<summary><strong>💜 C# — top of Program.cs</strong></summary>
+<summary><strong>💜 C# - top of Program.cs</strong></summary>
 
 ```csharp
 var manager = await FoundryLocalManager.StartServiceAsync();
@@ -267,9 +267,9 @@ The `chatClient` is then passed to all agent functions in the same file.
 
 ---
 
-### Exercise 4 — Understand the Feedback Loop
+### Exercise 4 - Understand the Feedback Loop
 
-The feedback loop is what makes this pipeline "smart" — the Editor can send work back for revision. Trace the logic:
+The feedback loop is what makes this pipeline "smart" - the Editor can send work back for revision. Trace the logic:
 
 ```
 Orchestrator:
@@ -293,9 +293,9 @@ Orchestrator:
 
 ---
 
-### Exercise 5 — Modify an Agent
+### Exercise 5 - Modify an Agent
 
-Try changing one agent's behavior and observe how it affects the pipeline:
+Try changing one agent's behaviour and observe how it affects the pipeline:
 
 | Modification | What to change |
 |-------------|----------------|
@@ -309,14 +309,14 @@ Try changing one agent's behavior and observe how it affects the pipeline:
 
 ---
 
-### Exercise 6 — Add a Fifth Agent
+### Exercise 6 - Add a Fifth Agent
 
 Extend the pipeline with a new agent. Some ideas:
 
 | Agent | Where in pipeline | Purpose |
 |-------|-------------------|---------|
 | **Fact-Checker** | After Writer, before Editor | Verify claims against the research data |
-| **SEO Optimizer** | After Editor accepts | Add meta description, keywords, slug |
+| **SEO Optimiser** | After Editor accepts | Add meta description, keywords, slug |
 | **Illustrator** | After Editor accepts | Generate image prompts for the article |
 | **Translator** | After Editor accepts | Translate the article to another language |
 
@@ -336,11 +336,11 @@ This application demonstrates the recommended pattern for building multi-agent s
 |-------|-----------|------|
 | **Runtime** | Foundry Local | Downloads, manages, and serves the model locally |
 | **Client** | OpenAI SDK | Sends chat completions to the local endpoint |
-| **Agent** | System prompt + chat call | Specialized behavior through focused instructions |
+| **Agent** | System prompt + chat call | specialised behaviour through focused instructions |
 | **Orchestrator** | Pipeline coordinator | Manages data flow, sequencing, and feedback loops |
 | **Framework** | Microsoft Agent Framework | Provides the `ChatAgent` abstraction and patterns |
 
-The key insight: **Foundry Local replaces the cloud backend, not the application architecture.** The same agent patterns, orchestration strategies, and structured hand-offs that work with cloud-hosted models work identically with local models — you just point the client at `manager.endpoint` instead of an Azure endpoint.
+The key insight: **Foundry Local replaces the cloud backend, not the application architecture.** The same agent patterns, orchestration strategies, and structured hand-offs that work with cloud-hosted models work identically with local models - you just point the client at `manager.endpoint` instead of an Azure endpoint.
 
 ---
 
@@ -350,7 +350,7 @@ The key insight: **Foundry Local replaces the cloud backend, not the application
 |---------|-----------------|
 | Production architecture | How to structure a multi-agent app with shared config and separate agents |
 | 4-step model loading | Best practice for initializing Foundry Local with user-visible progress |
-| Agent specialization | Each of 4 agents has focused instructions and a specific output format |
+| Agent Specialisation | Each of 4 agents has focused instructions and a specific output format |
 | Streaming generation | Writer yields tokens in real time, enabling responsive UIs |
 | Feedback loops | Editor-driven retry improves output quality without human intervention |
 | Cross-language patterns | Same architecture works in Python, JavaScript, and C# |
@@ -360,23 +360,23 @@ The key insight: **Foundry Local replaces the cloud backend, not the application
 
 ## Workshop Complete!
 
-Congratulations — you've completed the Foundry Local Workshop! You've gone from installing the CLI to building a production-style multi-agent application that runs entirely on your device.
+Congratulations - you've completed the Foundry Local Workshop! You've gone from installing the CLI to building a production-style multi-agent application that runs entirely on your device.
 
 **What you've built across the workshop:**
 
 | Part | What You Built |
 |------|---------------|
 | 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Mastered the Foundry Local SDK API — service, catalog, cache, model management |
+| 2 | Mastered the Foundry Local SDK API - service, catalog, cache, model management |
 | 3 | Connected from Python/JS/C# using the SDK with OpenAI |
 | 4 | Built a RAG pipeline with local knowledge retrieval |
 | 5 | Created AI agents with personas and structured output |
 | 6 | Orchestrated multi-agent pipelines with feedback loops |
-| 7 | Explored a production capstone app — the Zava Creative Writer |
+| 7 | Explored a production capstone app - the Zava Creative Writer |
 
 **Next steps:**
 - Continue to [Part 8: Voice Transcription with Whisper](part8-whisper-voice-transcription.md) to explore speech-to-text on-device
 - Try different models (`phi-4-mini`, `deepseek-r1-7b`) to compare quality and speed
 - Build a frontend UI for the Zava Writer API (Python version)
 - Create your own multi-agent application for a domain you care about
-- Deploy to the cloud by swapping Foundry Local for Azure AI Foundry — same code, different endpoint
+- Deploy to the cloud by swapping Foundry Local for Azure AI Foundry - same code, different endpoint

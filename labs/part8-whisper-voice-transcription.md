@@ -2,11 +2,11 @@
 
 # Part 8: Voice Transcription with Whisper and Foundry Local
 
-> **Goal:** Use the OpenAI Whisper model running locally through Foundry Local to transcribe audio files — completely on-device, no cloud required.
+> **Goal:** Use the OpenAI Whisper model running locally through Foundry Local to transcribe audio files - completely on-device, no cloud required.
 
 ## Overview
 
-Foundry Local isn't just for text generation — it also supports **speech-to-text** models. In this lab you'll use the **OpenAI Whisper Medium** model to transcribe audio files entirely on your machine. This is ideal for scenarios like transcribing Zava customer service calls, product review recordings, or workshop planning sessions where audio data must never leave your device.
+Foundry Local isn't just for text generation - it also supports **speech-to-text** models. In this lab you'll use the **OpenAI Whisper Medium** model to transcribe audio files entirely on your machine. This is ideal for scenarios like transcribing Zava customer service calls, product review recordings, or workshop planning sessions where audio data must never leave your device.
 
 
 ---
@@ -43,10 +43,10 @@ By the end of this lab you will be able to:
 
 The OpenAI Whisper model is a general-purpose speech recognition model trained on a large dataset of diverse audio. When running through Foundry Local:
 
-- The model runs **entirely on your CPU** — no GPU required
-- Audio never leaves your device — **complete privacy**
+- The model runs **entirely on your CPU** - no GPU required
+- Audio never leaves your device - **complete privacy**
 - The SDK provides an `AudioClient` (separate from the `ChatClient` used for text models)
-- The API is **OpenAI-compatible** — same `POST /v1/audio/transcriptions` endpoint format
+- The API is **OpenAI-compatible** - same `POST /v1/audio/transcriptions` endpoint format
 
 ![Whisper Transcription Architecture](../images/part8-whisper-architecture.png)
 
@@ -55,7 +55,7 @@ The OpenAI Whisper model is a general-purpose speech recognition model trained o
 | Alias | Model ID | Device | Size | Description |
 |-------|----------|--------|------|-------------|
 | `whisper-medium` | `openai-whisper-medium-cuda-gpu:1` | GPU | 1.53 GB | GPU-accelerated (CUDA) |
-| `whisper-medium` | `openai-whisper-medium-generic-cpu:1` | CPU | 3.05 GB | CPU-optimized (recommended for most devices) |
+| `whisper-medium` | `openai-whisper-medium-generic-cpu:1` | CPU | 3.05 GB | CPU-optimised (recommended for most devices) |
 
 > **Note:** Unlike chat models that list by default, Whisper models are categorized under the `automatic-speech-recognition` task. Use `foundry model info whisper-medium` to see details.
 
@@ -63,12 +63,12 @@ The OpenAI Whisper model is a general-purpose speech recognition model trained o
 
 ## Lab Exercises
 
-### Exercise 0 — Get Sample Audio Files
+### Exercise 0 - Get Sample Audio Files
 
 This lab includes pre-built WAV files based on Zava DIY product scenarios. Generate them with the included script:
 
 ```bash
-# From the repo root — create and activate a .venv first
+# From the repo root - create and activate a .venv first
 python -m venv .venv
 
 # Windows (PowerShell):
@@ -94,7 +94,7 @@ This creates five WAV files in `samples/audio/`:
 
 ---
 
-### Exercise 1 — Download the Whisper Model Using the SDK
+### Exercise 1 - Download the Whisper Model Using the SDK
 
 Due to CLI incompatibilities with Whisper models in newer Foundry Local versions, use the **SDK** to download and load the model. Choose your language:
 
@@ -235,9 +235,9 @@ Console.WriteLine($"Whisper model loaded. Endpoint: {manager.Endpoint}");
 
 ---
 
-### Exercise 2 — Understand the Whisper SDK
+### Exercise 2 - Understand the Whisper SDK
 
-Whisper transcription uses the **OpenAI-compatible audio transcription API** (`POST /v1/audio/transcriptions`). In Python and JavaScript, you use the same OpenAI SDK you already know — just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. In C#, Foundry Local provides a native `AudioClient` via the WinML package for in-process transcription.
+Whisper transcription uses the **OpenAI-compatible audio transcription API** (`POST /v1/audio/transcriptions`). In Python and JavaScript, you use the same OpenAI SDK you already know - just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. In C#, Foundry Local provides a native `AudioClient` via the WinML package for in-process transcription.
 
 | Component | Python | JavaScript | C# |
 |-----------|--------|------------|----|
@@ -252,7 +252,7 @@ Whisper transcription uses the **OpenAI-compatible audio transcription API** (`P
 
 ---
 
-### Exercise 3 — Build a Simple Transcription App
+### Exercise 3 - Build a Simple Transcription App
 
 Choose your language track and build a minimal application that transcribes an audio file.
 
@@ -294,7 +294,7 @@ if not os.path.exists(audio_file):
     print("Usage: python foundry-local-whisper.py <path-to-audio-file>")
     sys.exit(1)
 
-# Step 1: Bootstrap — starts service, downloads, and loads the model
+# Step 1: Bootstrap - starts service, downloads, and loads the model
 print(f"Initializing Foundry Local with model: {model_alias}...")
 manager = FoundryLocalManager(model_alias)
 
@@ -366,7 +366,7 @@ if (!fs.existsSync(audioFile)) {
   process.exit(1);
 }
 
-// Step 1: Initialize — starts service, downloads, and loads the model
+// Step 1: Initialize - starts service, downloads, and loads the model
 console.log(`Initializing Foundry Local with model: ${modelAlias}...`);
 const manager = new FoundryLocalManager();
 const modelInfo = await manager.init(modelAlias);
@@ -530,7 +530,7 @@ dotnet run -- ..\samples\audio\zava-workshop-setup.wav
 
 ---
 
-### Exercise 4 — Batch Transcribe All Zava Samples
+### Exercise 4 - Batch Transcribe All Zava Samples
 
 Now that you have a working transcription app, transcribe all five Zava sample files and compare the results.
 
@@ -548,7 +548,7 @@ from foundry_local import FoundryLocalManager
 model_alias = "whisper-medium"
 samples_dir = os.path.join("..", "samples", "audio")
 
-# Bootstrap — starts service, downloads, and loads the model
+# Bootstrap - starts service, downloads, and loads the model
 manager = FoundryLocalManager(model_alias)
 
 client = openai.OpenAI(
@@ -571,7 +571,7 @@ for wav_path in sorted(glob.glob(os.path.join(samples_dir, "zava-*.wav"))):
         )
     print(result.text)
 
-print(f"\n\nDone — transcribed {len(glob.glob(os.path.join(samples_dir, 'zava-*.wav')))} files.")
+print(f"\n\nDone - transcribed {len(glob.glob(os.path.join(samples_dir, 'zava-*.wav')))} files.")
 ```
 
 ```bash
@@ -594,7 +594,7 @@ import path from "node:path";
 const modelAlias = "whisper-medium";
 const samplesDir = path.join("..", "samples", "audio");
 
-// Initialize — starts service, downloads, and loads the model
+// Initialize - starts service, downloads, and loads the model
 const manager = new FoundryLocalManager();
 const modelInfo = await manager.init(modelAlias);
 
@@ -621,7 +621,7 @@ for (const filename of wavFiles) {
   console.log(result.text);
 }
 
-console.log(`\n\nDone — transcribed ${wavFiles.length} files.`);
+console.log(`\n\nDone - transcribed ${wavFiles.length} files.`);
 ```
 
 ```bash
@@ -682,7 +682,7 @@ foreach (var wavPath in wavFiles)
     Console.WriteLine(result.Text);
 }
 
-Console.WriteLine($"\n\nDone — transcribed {wavFiles.Length} files.");
+Console.WriteLine($"\n\nDone - transcribed {wavFiles.Length} files.");
 ```
 
 ```bash
@@ -695,12 +695,12 @@ dotnet run
 
 ---
 
-### Exercise 5 — Understand the Key Code Patterns
+### Exercise 5 - Understand the Key Code Patterns
 
 Study how Whisper transcription differs from chat completions across all three languages:
 
 <details>
-<summary><b>🐍 Python — Key Differences from Chat</b></summary>
+<summary><b>🐍 Python - Key Differences from Chat</b></summary>
 
 ```python
 # Chat completion (Parts 2-6):
@@ -719,12 +719,12 @@ with open("audio.wav", "rb") as f:
 print(result.text)
 ```
 
-**Key insight:** Same `openai.OpenAI` client, same `manager.endpoint` — just a different API method. Use `FoundryLocalManager(alias)` to bootstrap, then call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`.
+**Key insight:** Same `openai.OpenAI` client, same `manager.endpoint` - just a different API method. Use `FoundryLocalManager(alias)` to bootstrap, then call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`.
 
 </details>
 
 <details>
-<summary><b>📘 JavaScript — Key Differences from Chat</b></summary>
+<summary><b>📘 JavaScript - Key Differences from Chat</b></summary>
 
 ```javascript
 // Chat completion (Parts 2-6):
@@ -742,16 +742,16 @@ const result = await client.audio.transcriptions.create({
 console.log(result.text);
 ```
 
-**Key insight:** Same `OpenAI` client, same `manager.endpoint` — just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. Use `manager.init(alias)` for one-line setup.
+**Key insight:** Same `OpenAI` client, same `manager.endpoint` - just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. Use `manager.init(alias)` for one-line setup.
 
 </details>
 
 <details>
-<summary><b>💜 C# — Key Differences from Chat</b></summary>
+<summary><b>💜 C# - Key Differences from Chat</b></summary>
 
-The C# approach is fundamentally different — it uses `WinML` for in-process transcription:
+The C# approach is fundamentally different - it uses `WinML` for in-process transcription:
 
-**Model initialization:**
+**Model initialisation:**
 
 ```csharp
 // 1. Create the manager with configuration (NOT StartServiceAsync)
@@ -787,12 +787,12 @@ await model.LoadAsync();
 var audioClient = await model.GetAudioClientAsync()
     ?? throw new Exception("Failed to get audio client.");
 
-// Transcribe — returns an object with a .Text property
+// Transcribe - returns an object with a .Text property
 var response = await audioClient.TranscribeAudioAsync(filePath);
 return response;
 ```
 
-**Key insight:** C# uses `FoundryLocalManager.CreateAsync()` (not `StartServiceAsync()`) and gets an `AudioClient` directly — no OpenAI SDK needed. The model runs in-process via WinML.
+**Key insight:** C# uses `FoundryLocalManager.CreateAsync()` (not `StartServiceAsync()`) and gets an `AudioClient` directly - no OpenAI SDK needed. The model runs in-process via WinML.
 
 </details>
 
@@ -800,19 +800,19 @@ return response;
 
 ---
 
-### Exercise 6 — Experiment
+### Exercise 6 - Experiment
 
 Try these modifications to deepen your understanding:
 
-1. **Try different audio files** — record yourself speaking using Windows Voice Recorder, save as WAV, and transcribe it
+1. **Try different audio files** - record yourself speaking using Windows Voice Recorder, save as WAV, and transcribe it
 
-2. **Compare model variants** — if you have an NVIDIA GPU, try the CUDA variant:
+2. **Compare model variants** - if you have an NVIDIA GPU, try the CUDA variant:
    ```bash
    foundry model download whisper-medium --device GPU
    ```
    Compare the transcription speed against the CPU variant.
 
-3. **Add output formatting** — the JSON response can include:
+3. **Add output formatting** - the JSON response can include:
    ```json
    {
      "text": "Welcome to Zava Home Improvement. I'd like to learn more about the ProGrip Cordless Drill.",
@@ -821,7 +821,7 @@ Try these modifications to deepen your understanding:
    }
    ```
 
-4. **Build a REST API** — wrap your transcription code in a web server:
+4. **Build a REST API** - wrap your transcription code in a web server:
 
    | Language | Framework | Example |
    |----------|-----------|--------|
@@ -829,7 +829,7 @@ Try these modifications to deepen your understanding:
    | JavaScript | Express.js | `app.post("/v1/audio/transcriptions")` with `multer` |
    | C# | ASP.NET Minimal API | `app.MapPost("/v1/audio/transcriptions")` with `IFormFile` |
 
-5. **Multi-turn with transcription** — combine Whisper with a chat agent from Part 4: transcribe audio first, then pass the text to an agent for analysis or summarization.
+5. **Multi-turn with transcription** - combine Whisper with a chat agent from Part 4: transcribe audio first, then pass the text to an agent for analysis or summarisation.
 
 ---
 
@@ -841,7 +841,7 @@ Try these modifications to deepen your understanding:
 
 ## Comparison: Chat Models vs. Whisper
 
-| Aspect | Chat Models (Parts 3-7) | Whisper — Python/JS | Whisper — C# |
+| Aspect | Chat Models (Parts 3-7) | Whisper - Python/JS | Whisper - C# |
 |--------|------------------------|--------------------|--------------|
 | **Task type** | `chat` | `automatic-speech-recognition` | `automatic-speech-recognition` |
 | **Input** | Text messages (JSON) | Audio files (WAV/MP3/M4A) | Audio files (WAV/MP3/M4A) |
@@ -858,12 +858,12 @@ Try these modifications to deepen your understanding:
 
 | Concept | What You Learned |
 |---------|-----------------|
-| **Whisper on-device** | Speech-to-text runs entirely locally — ideal for transcribing Zava customer calls and product reviews on-device |
+| **Whisper on-device** | Speech-to-text runs entirely locally - ideal for transcribing Zava customer calls and product reviews on-device |
 | **Version requirement** | Whisper models require Foundry Local **v0.8.101 or earlier** |
 | **Multi-language support** | Python and JS use `client.audio.transcriptions.create()`, C# uses `AudioClient` |
-| **Same OpenAI SDK** | Python/JS reuse the same OpenAI SDK — just a different endpoint method |
+| **Same OpenAI SDK** | Python/JS reuse the same OpenAI SDK - just a different endpoint method |
 | **WinML package (C#)** | C# uses `Microsoft.AI.Foundry.Local.WinML` for in-process transcription |
-| **CPU-optimized** | The CPU variant (3.05 GB) works on any Windows device without a GPU |
+| **CPU-optimised** | The CPU variant (3.05 GB) works on any Windows device without a GPU |
 | **Privacy-first** | Perfect for keeping Zava customer interactions and proprietary product data on-device |
 
 ---
@@ -872,8 +872,8 @@ Try these modifications to deepen your understanding:
 
 | Resource | Link |
 |----------|------|
-| Foundry Local docs | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
-| Foundry Local SDK Reference | [Microsoft Learn — SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
+| Foundry Local docs | [Microsoft Learn - Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
+| Foundry Local SDK Reference | [Microsoft Learn - SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
 | OpenAI Whisper model | [github.com/openai/whisper](https://github.com/openai/whisper) |
 | Foundry Local website | [foundrylocal.ai](https://foundrylocal.ai) |
 
@@ -881,15 +881,15 @@ Try these modifications to deepen your understanding:
 
 ## Workshop Complete!
 
-Congratulations — you've completed the full Foundry Local Workshop! You've gone from installing the CLI to building chat apps, RAG pipelines, multi-agent systems, and now speech-to-text transcription — all running entirely on your device.
+Congratulations - you've completed the full Foundry Local Workshop! You've gone from installing the CLI to building chat apps, RAG pipelines, multi-agent systems, and now speech-to-text transcription - all running entirely on your device.
 
 | Part | What You Built |
 |------|---------------|
 | 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Mastered the Foundry Local SDK API — service, catalog, cache, model management |
+| 2 | Mastered the Foundry Local SDK API - service, catalog, cache, model management |
 | 3 | Connected from Python/JS/C# using the SDK with OpenAI |
 | 4 | Built a RAG pipeline with local knowledge retrieval |
 | 5 | Created AI agents with personas and structured output |
 | 6 | Orchestrated multi-agent pipelines with feedback loops |
-| 7 | Explored a production capstone app — the Zava Creative Writer |
-| 8 | Transcribed audio with Whisper — speech-to-text on-device |
+| 7 | Explored a production capstone app - the Zava Creative Writer |
+| 8 | Transcribed audio with Whisper - speech-to-text on-device |
