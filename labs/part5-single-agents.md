@@ -1,6 +1,6 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 4: Building AI Agents with the Agent Framework
+# Part 5: Building AI Agents with the Agent Framework
 
 > **Goal:** Build your first AI agent with persistent instructions and a defined persona, powered by a local model through Foundry Local.
 
@@ -18,15 +18,18 @@ An AI agent wraps a language model with **system instructions** that define its 
 
 ## The Microsoft Agent Framework
 
-The **Microsoft Agent Framework** (AGF) provides a standard `ChatAgent` abstraction that works across different model backends. In this workshop we pair it with Foundry Local so everything runs on your machine — no cloud required.
+The **Microsoft Agent Framework** (AGF) provides a standard agent abstraction that works across different model backends. In this workshop we pair it with Foundry Local so everything runs on your machine — no cloud required.
 
 | Concept | Description |
 |---------|-------------|
-| `ChatAgent` | Core class — wraps a model client + instructions |
-| `OpenAIChatClient` | Connects the agent to any OpenAI-compatible endpoint |
+| `FoundryLocalClient` | Python: handles service start, model download/load, and creates agents |
+| `client.as_agent()` | Python: creates an agent from the Foundry Local client |
+| `AsAIAgent()` | C#: extension method on `ChatClient` — creates an `AIAgent` |
 | `instructions` | System prompt that shapes the agent's behavior |
 | `name` | Human-readable label, useful in multi-agent scenarios |
-| `agent.run(prompt)` | Sends a user message and returns the agent's response |
+| `agent.run(prompt)` / `RunAsync()` | Sends a user message and returns the agent's response |
+
+> **Note:** The Agent Framework has a Python and .NET SDK. For JavaScript, we implement a lightweight `ChatAgent` class that mirrors the same pattern using the OpenAI SDK directly.
 
 ---
 
@@ -52,6 +55,13 @@ Before writing code, study the key components of an agent:
 **Prerequisites:**
 ```bash
 cd python
+python -m venv venv
+
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# macOS:
+source venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
@@ -64,48 +74,38 @@ python foundry-local-with-agf.py
 
 ```python
 import asyncio
-from foundry_local import FoundryLocalManager
-from agent_framework import ChatAgent
-from agent_framework.openai import OpenAIChatClient
+from agent_framework.microsoft import FoundryLocalClient
 
 async def main():
-    # 1. Start Foundry Local and load a model
-    alias = "phi-3.5-mini"
-    manager = FoundryLocalManager()
-    manager.start_service()
+    alias = "phi-4-mini"
 
-    cached = manager.list_cached_models()
-    catalog_info = manager.get_model_info(alias)
-    is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
-    if not is_cached:
-        print(f"Downloading model: {alias}...")
-        manager.download_model(alias)
-    manager.load_model(alias)
-    model_info = manager.get_model_info(alias)
+    # FoundryLocalClient handles service start, model download, and loading
+    client = FoundryLocalClient(model_id=alias)
+    print(f"Client Model ID: {client.model_id}")
 
-    # 2. Create a ChatAgent with system instructions
-    agent = ChatAgent(
-        chat_client=OpenAIChatClient(
-            model_id=model_info.id,
-            base_url=manager.endpoint,
-            api_key=manager.api_key,
-        ),
-        instructions="You are good at telling jokes.",
+    # Create an agent with system instructions
+    agent = client.as_agent(
         name="Joker",
+        instructions="You are good at telling jokes.",
     )
 
-    # 3. Run the agent
+    # Non-streaming: get the complete response at once
     result = await agent.run("Tell me a joke about a pirate.")
-    print(result.text)
+    print(f"Agent: {result}")
+
+    # Streaming: get results as they are generated
+    async for chunk in agent.run("Tell me another joke.", stream=True):
+        if chunk.text:
+            print(chunk.text, end="", flush=True)
 
 asyncio.run(main())
 ```
 
 **Key points:**
-- `FoundryLocalManager()` + `start_service()` + cache check + `load_model()` give full visibility into model lifecycle
-- `OpenAIChatClient` connects the agent to the local endpoint
-- `instructions` define the agent's persona ("good at telling jokes")
-- `agent.run()` is async — returns a result with `.text`
+- `FoundryLocalClient(model_id=alias)` handles service start, download, and model loading in one step
+- `client.as_agent()` creates an agent with system instructions and a name
+- `agent.run()` supports both non-streaming and streaming modes
+- Install via `pip install agent-framework-foundry-local --pre`
 
 </details>
 
@@ -214,37 +214,12 @@ dotnet run agent
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Agents.AI;
 using OpenAI;
-using OpenAI.Chat;
 using System.ClientModel;
 
-// A minimal agent that wraps a ChatClient with instructions and history.
-private sealed class ChatAgent
-{
-    private readonly ChatClient _chatClient;
-    private readonly List<ChatMessage> _history = [];
-
-    public string Name { get; }
-
-    public ChatAgent(ChatClient chatClient, string name, string instructions)
-    {
-        _chatClient = chatClient;
-        Name = name;
-        _history.Add(new SystemChatMessage(instructions));
-    }
-
-    public string Run(string userMessage)
-    {
-        _history.Add(new UserChatMessage(userMessage));
-        var completion = _chatClient.CompleteChat(_history);
-        var reply = completion.Value.Content[0].Text;
-        _history.Add(new AssistantChatMessage(reply));
-        return reply;
-    }
-}
-
 // 1. Start Foundry Local and load a model
-var alias = "phi-3.5-mini";
+var alias = "phi-4-mini";
 var manager = await FoundryLocalManager.StartServiceAsync();
 
 var cachedModels = await manager.ListCachedModelsAsync();
@@ -262,25 +237,30 @@ var client = new OpenAIClient(key, new OpenAIClientOptions
 {
     Endpoint = manager.Endpoint
 });
-var chatClient = client.GetChatClient(model?.ModelId);
 
-// 2. Create a ChatAgent with system instructions
-var joker = new ChatAgent(
-    chatClient,
-    name: "Joker",
-    instructions: "You are good at telling jokes. Keep your jokes short and family-friendly."
-);
+// 2. Create an AIAgent using the Agent Framework extension method
+AIAgent joker = client
+    .GetChatClient(model?.ModelId)
+    .AsAIAgent(
+        instructions: "You are good at telling jokes. Keep your jokes short and family-friendly.",
+        name: "Joker"
+    );
 
-// 3. Run the agent
-var response = joker.Run("Tell me a joke about a pirate.");
-Console.WriteLine($"{joker.Name}: {response}");
+// 3. Run the agent (non-streaming)
+var response = await joker.RunAsync("Tell me a joke about a pirate.");
+Console.WriteLine($"Joker: {response}");
+
+// 4. Run with streaming
+await foreach (var update in joker.RunStreamingAsync("Tell me another joke."))
+{
+    Console.Write(update);
+}
 ```
 
 **Key points:**
-- C# implements its own `ChatAgent` class wrapping `ChatClient`
-- `_history` stores conversation turns as `ChatMessage` objects
-- `SystemChatMessage` in the constructor sets the persona
-- `Run()` is synchronous — the agent returns the full response
+- `AsAIAgent()` is an extension method from `Microsoft.Agents.AI.OpenAI` — no custom `ChatAgent` class needed
+- `RunAsync()` returns the full response; `RunStreamingAsync()` streams token by token
+- Install via `dotnet add package Microsoft.Agents.AI.OpenAI --version 1.0.0-rc3`
 
 </details>
 
@@ -316,32 +296,14 @@ Extend the example to support a multi-turn chat loop so you can have a back-and-
 
 ```python
 import asyncio
-from foundry_local import FoundryLocalManager
-from agent_framework import ChatAgent
-from agent_framework.openai import OpenAIChatClient
+from agent_framework.microsoft import FoundryLocalClient
 
 async def main():
-    alias = "phi-3.5-mini"
-    manager = FoundryLocalManager()
-    manager.start_service()
+    client = FoundryLocalClient(model_id="phi-4-mini")
 
-    cached = manager.list_cached_models()
-    catalog_info = manager.get_model_info(alias)
-    is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
-    if not is_cached:
-        print(f"Downloading model: {alias}...")
-        manager.download_model(alias)
-    manager.load_model(alias)
-    model_info = manager.get_model_info(alias)
-
-    agent = ChatAgent(
-        chat_client=OpenAIChatClient(
-            model_id=model_info.id,
-            base_url=manager.endpoint,
-            api_key=manager.api_key,
-        ),
-        instructions="You are a helpful assistant.",
+    agent = client.as_agent(
         name="Assistant",
+        instructions="You are a helpful assistant.",
     )
 
     print("Chat with the agent (type 'quit' to exit):\n")
@@ -350,7 +312,7 @@ async def main():
         if user_input.strip().lower() in ("quit", "exit"):
             break
         result = await agent.run(user_input)
-        print(f"Agent: {result.text}\n")
+        print(f"Agent: {result}\n")
 
 asyncio.run(main())
 ```
@@ -417,11 +379,11 @@ main();
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Agents.AI;
 using OpenAI;
-using OpenAI.Chat;
 using System.ClientModel;
 
-var alias = "phi-3.5-mini";
+var alias = "phi-4-mini";
 var manager = await FoundryLocalManager.StartServiceAsync();
 
 var cachedModels = await manager.ListCachedModelsAsync();
@@ -439,13 +401,13 @@ var client = new OpenAIClient(key, new OpenAIClientOptions
 {
     Endpoint = manager.Endpoint
 });
-var chatClient = client.GetChatClient(model?.ModelId);
 
-var agent = new ChatAgent(
-    chatClient,
-    name: "Assistant",
-    instructions: "You are a helpful assistant."
-);
+AIAgent agent = client
+    .GetChatClient(model?.ModelId)
+    .AsAIAgent(
+        instructions: "You are a helpful assistant.",
+        name: "Assistant"
+    );
 
 Console.WriteLine("Chat with the agent (type 'quit' to exit):\n");
 while (true)
@@ -457,7 +419,7 @@ while (true)
         userInput.Equals("exit", StringComparison.OrdinalIgnoreCase))
         break;
 
-    var result = agent.Run(userInput);
+    var result = await agent.RunAsync(userInput);
     Console.WriteLine($"Agent: {result}\n");
 }
 ```
@@ -478,43 +440,25 @@ Instruct the agent to always respond in a specific format (e.g., JSON) and parse
 ```python
 import asyncio
 import json
-from foundry_local import FoundryLocalManager
-from agent_framework import ChatAgent
-from agent_framework.openai import OpenAIChatClient
+from agent_framework.microsoft import FoundryLocalClient
 
 async def main():
-    alias = "phi-3.5-mini"
-    manager = FoundryLocalManager()
-    manager.start_service()
+    client = FoundryLocalClient(model_id="phi-4-mini")
 
-    cached = manager.list_cached_models()
-    catalog_info = manager.get_model_info(alias)
-    is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
-    if not is_cached:
-        print(f"Downloading model: {alias}...")
-        manager.download_model(alias)
-    manager.load_model(alias)
-    model_info = manager.get_model_info(alias)
-
-    agent = ChatAgent(
-        chat_client=OpenAIChatClient(
-            model_id=model_info.id,
-            base_url=manager.endpoint,
-            api_key=manager.api_key,
-        ),
+    agent = client.as_agent(
+        name="SentimentAnalyzer",
         instructions=(
             "You are a sentiment analysis agent. "
             "For every user message, respond ONLY with valid JSON in this format: "
             '{"sentiment": "positive|negative|neutral", "confidence": 0.0-1.0, "summary": "brief reason"}'
         ),
-        name="SentimentAnalyzer",
     )
 
     result = await agent.run("I absolutely loved the new restaurant downtown!")
-    print("Raw:", result.text)
+    print("Raw:", result)
 
     try:
-        parsed = json.loads(result.text)
+        parsed = json.loads(str(result))
         print(f"Sentiment: {parsed['sentiment']} (confidence: {parsed['confidence']})")
     except json.JSONDecodeError:
         print("Agent did not return valid JSON — try refining the instructions.")
@@ -530,8 +474,7 @@ asyncio.run(main())
 ```csharp
 using System.Text.Json;
 
-var agent = new ChatAgent(
-    chatClient,
+AIAgent analyzer = chatClient.AsAIAgent(
     name: "SentimentAnalyzer",
     instructions:
         "You are a sentiment analysis agent. " +
@@ -539,12 +482,12 @@ var agent = new ChatAgent(
         "{\"sentiment\": \"positive|negative|neutral\", \"confidence\": 0.0-1.0, \"summary\": \"brief reason\"}"
 );
 
-var response = agent.Run("I absolutely loved the new restaurant downtown!");
+var response = await analyzer.RunAsync("I absolutely loved the new restaurant downtown!");
 Console.WriteLine($"Raw: {response}");
 
 try
 {
-    var parsed = JsonSerializer.Deserialize<JsonElement>(response);
+    var parsed = JsonSerializer.Deserialize<JsonElement>(response.ToString());
     Console.WriteLine($"Sentiment: {parsed.GetProperty("sentiment")} " +
                       $"(confidence: {parsed.GetProperty("confidence")})");
 }
@@ -574,4 +517,4 @@ catch (JsonException)
 
 ## Next Steps
 
-In **[Part 5: Multi-Agent Workflows](part5-multi-agent-workflows.md)**, you'll combine multiple agents into a coordinated pipeline where each agent has a specialized role.
+In **[Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)**, you'll combine multiple agents into a coordinated pipeline where each agent has a specialized role.

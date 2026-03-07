@@ -1,6 +1,6 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 3: Building a RAG Application with Foundry Local
+# Part 4: Building a RAG Application with Foundry Local
 
 ## Overview
 
@@ -23,7 +23,7 @@ By the end of this lab you will be able to:
 
 ## Prerequisites
 
-- Complete [Part 2: Using the Foundry Local SDK](part2-sdk-and-apis.md)
+- Complete [Part 3: Using the Foundry Local SDK with OpenAI](part3-sdk-and-apis.md)
 - Foundry Local CLI installed and `phi-3.5-mini` model downloaded
 
 ---
@@ -442,4 +442,4 @@ The patterns you learn here — retrieve, augment, generate — are the same at 
 
 ## Next Steps
 
-Continue to [Part 4: Building AI Agents](part4-single-agents.md) to learn how to build intelligent agents with personas, instructions, and multi-turn conversations using the Microsoft Agent Framework.
+Continue to [Part 5: Building AI Agents](part5-single-agents.md) to learn how to build intelligent agents with personas, instructions, and multi-turn conversations using the Microsoft Agent Framework.

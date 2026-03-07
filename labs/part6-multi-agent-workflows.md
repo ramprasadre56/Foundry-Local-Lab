@@ -1,6 +1,6 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 5: Multi-Agent Workflows
+# Part 6: Multi-Agent Workflows
 
 > **Goal:** Combine multiple specialized agents into coordinated pipelines that divide complex tasks among collaborating agents — all running locally with Foundry Local.
 
@@ -31,6 +31,13 @@ The workshop includes a complete Researcher → Writer → Editor workflow.
 **Setup:**
 ```bash
 cd python
+python -m venv venv
+
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# macOS:
+source venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
@@ -93,16 +100,14 @@ Study how agents are defined and connected:
 All agents share the same Foundry Local model:
 
 ```python
-# Python
-chat_client = OpenAIChatClient(
-    model_id=model_info.id,
-    base_url=manager.endpoint,
-    api_key=manager.api_key,
-)
+# Python — FoundryLocalClient handles everything
+from agent_framework.microsoft import FoundryLocalClient
+
+client = FoundryLocalClient(model_id="phi-4-mini")
 ```
 
 ```javascript
-// JavaScript
+// JavaScript — OpenAI SDK pointed at Foundry Local
 const client = new OpenAI({
   baseURL: manager.endpoint,
   apiKey: manager.apiKey,
@@ -110,7 +115,7 @@ const client = new OpenAI({
 ```
 
 ```csharp
-// C#
+// C# — OpenAIClient pointed at Foundry Local
 var key = new ApiKeyCredential(manager.ApiKey);
 var client = new OpenAIClient(key, new OpenAIClientOptions
 {
@@ -136,23 +141,23 @@ Each agent has a distinct persona:
 research_result = await researcher.run(f"Research: {topic}")
 
 # Step 2 — output from writer becomes input to editor
-writer_result = await writer.run(f"Write using:\n{research_result.text}")
+writer_result = await writer.run(f"Write using:\n{research_result}")
 
 # Step 3 — editor reviews both research and article
 editor_result = await editor.run(
-    f"Research:\n{research_result.text}\n\nArticle:\n{writer_result.text}"
+    f"Research:\n{research_result}\n\nArticle:\n{writer_result}"
 )
 ```
 
 ```csharp
-// C# — same pattern, synchronous calls
-var researchNotes = researcher.Run(
+// C# — same pattern, async calls with AIAgent
+var researchNotes = await researcher.RunAsync(
     $"Research the following topic and provide key facts:\n{topic}");
 
-var draft = writer.Run(
+var draft = await writer.RunAsync(
     $"Write a blog post based on these research notes:\n\n{researchNotes}");
 
-var verdict = editor.Run(
+var verdict = await editor.RunAsync(
     $"Review this article for quality and accuracy.\n\n" +
     $"Research notes:\n{researchNotes}\n\n" +
     $"Article:\n{draft}");
@@ -176,8 +181,7 @@ Extend the pipeline by adding a new agent. Choose one:
 <summary><strong>🐍 Python — adding a Headline Writer</strong></summary>
 
 ```python
-headline_agent = create_agent(
-    chat_client,
+headline_agent = client.as_agent(
     name="HeadlineWriter",
     instructions=(
         "You are a headline specialist. Given an article, generate exactly "
@@ -188,9 +192,9 @@ headline_agent = create_agent(
 
 # After the editor accepts, generate headlines
 headline_result = await headline_agent.run(
-    f"Generate headlines for this article:\n\n{writer_result.text}"
+    f"Generate headlines for this article:\n\n{writer_result}"
 )
-print(f"\n--- Headlines ---\n{headline_result.text}")
+print(f"\n--- Headlines ---\n{headline_result}")
 ```
 
 </details>
@@ -221,8 +225,7 @@ console.log(`\n--- Headlines ---\n${headlineResult.text}`);
 <summary><strong>💜 C# — adding a Headline Writer</strong></summary>
 
 ```csharp
-var headlineAgent = new ChatAgent(
-    chatClient,
+AIAgent headlineAgent = chatClient.AsAIAgent(
     name: "HeadlineWriter",
     instructions:
         "You are a headline specialist. Given an article, generate exactly " +
@@ -231,7 +234,7 @@ var headlineAgent = new ChatAgent(
 );
 
 // After the editor accepts, generate headlines
-var headlines = headlineAgent.Run(
+var headlines = await headlineAgent.RunAsync(
     $"Generate headlines for this article:\n\n{draft}");
 Console.WriteLine($"\n--- Headlines ---\n{headlines}");
 ```
@@ -261,7 +264,7 @@ Design a multi-agent pipeline for a different domain. Here are some ideas:
 
 ## Orchestration Patterns
 
-Here are orchestration patterns that apply to any multi-agent system (explored in depth in [Part 6](part6-zava-creative-writer.md)):
+Here are orchestration patterns that apply to any multi-agent system (explored in depth in [Part 7](part7-zava-creative-writer.md)):
 
 ### Sequential Pipeline
 
@@ -292,10 +295,10 @@ All agents share a single `foundry_config` so they use the same model and endpoi
 | Feedback loops | An evaluator can trigger retries for higher quality |
 | Structured output | JSON-formatted responses enable reliable agent-to-agent communication |
 | Orchestration | A coordinator manages the pipeline sequence and error handling |
-| Production patterns | Applied in [Part 6: Zava Creative Writer](part6-zava-creative-writer.md) |
+| Production patterns | Applied in [Part 7: Zava Creative Writer](part7-zava-creative-writer.md) |
 
 ---
 
 ## Next Steps
 
-Continue to [Part 6: Zava Creative Writer — Capstone Application](part6-zava-creative-writer.md) to explore a production-style multi-agent app with 4 specialized agents, streaming output, product search, and feedback loops — available in Python, JavaScript, and C#.
+Continue to [Part 7: Zava Creative Writer — Capstone Application](part7-zava-creative-writer.md) to explore a production-style multi-agent app with 4 specialized agents, streaming output, product search, and feedback loops — available in Python, JavaScript, and C#.

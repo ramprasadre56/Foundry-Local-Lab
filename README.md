@@ -17,12 +17,13 @@ By the end of this workshop you will be able to:
 | # | Objective |
 |---|-----------|
 | 1 | Install Foundry Local and manage models with the CLI |
-| 2 | Connect to the local inference server using the Python, JavaScript, and C# SDKs |
-| 3 | Build a Retrieval-Augmented Generation (RAG) pipeline that grounds answers in your own data |
-| 4 | Create AI agents with persistent instructions and personas |
-| 5 | Orchestrate multi-agent workflows with feedback loops |
-| 6 | Explore a production capstone app — the Zava Creative Writer |
-| 7 | Transcribe audio with Whisper — speech-to-text on-device (requires Foundry Local v0.8.101 or earlier) |
+| 2 | Master the Foundry Local SDK API for programmatic model management |
+| 3 | Connect to the local inference server using the Python, JavaScript, and C# SDKs |
+| 4 | Build a Retrieval-Augmented Generation (RAG) pipeline that grounds answers in your own data |
+| 5 | Create AI agents with persistent instructions and personas |
+| 6 | Orchestrate multi-agent workflows with feedback loops |
+| 7 | Explore a production capstone app — the Zava Creative Writer |
+| 8 | Transcribe audio with Whisper — speech-to-text on-device (requires Foundry Local v0.8.101 or earlier) |
 
 ---
 
@@ -32,7 +33,7 @@ By the end of this workshop you will be able to:
 |-------------|---------|
 | **Hardware** | 8 GB RAM minimum (16 GB recommended); AVX2-capable CPU or a supported GPU |
 | **OS** | Windows 10/11 (x64/ARM), Windows Server 2025, or macOS 13+ |
-| **Foundry Local CLI** | Install via `winget install Microsoft.FoundryLocal` (Windows) or `brew tap microsoft/foundrylocal && brew install foundrylocal` (macOS). See the [getting started guide](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started) for details. |
+| **Foundry Local CLI** | Install via `winget install Microsoft.FoundryLocal` (Windows) or `brew tap microsoft/foundrylocal && brew install foundrylocal` (macOS). See the [getting started guide](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) for details. |
 | **Language runtime** | **Python 3.9+** and/or **.NET 9.0+** and/or **Node.js 18+** |
 | **Git** | For cloning this repository |
 
@@ -73,9 +74,21 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 2: SDKs and APIs
+### Part 2: Foundry Local SDK Deep Dive
 
-**Lab guide:** [`labs/part2-sdk-and-apis.md`](labs/part2-sdk-and-apis.md)
+**Lab guide:** [`labs/part2-foundry-local-sdk.md`](labs/part2-foundry-local-sdk.md)
+
+- Why use the SDK over the CLI for application development
+- Full SDK API reference for Python, JavaScript, and C#
+- Service management, catalog browsing, model lifecycle (download, load, unload)
+- Quick-start patterns: Python constructor bootstrap, JavaScript `init()`, C# `CreateAsync()`
+- `FoundryModelInfo` metadata, aliases, and hardware-optimal model selection
+
+---
+
+### Part 3: SDKs and APIs
+
+**Lab guide:** [`labs/part3-sdk-and-apis.md`](labs/part3-sdk-and-apis.md)
 
 - Connecting to Foundry Local from Python, JavaScript, and C#
 - Using the Foundry Local SDK to manage the service programmatically
@@ -92,9 +105,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 3: Retrieval-Augmented Generation (RAG)
+### Part 4: Retrieval-Augmented Generation (RAG)
 
-**Lab guide:** [`labs/part3-rag-fundamentals.md`](labs/part3-rag-fundamentals.md)
+**Lab guide:** [`labs/part4-rag-fundamentals.md`](labs/part4-rag-fundamentals.md)
 
 - What is RAG and why it matters
 - Building an in-memory knowledge base
@@ -112,9 +125,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 4: Building AI Agents
+### Part 5: Building AI Agents
 
-**Lab guide:** [`labs/part4-single-agents.md`](labs/part4-single-agents.md)
+**Lab guide:** [`labs/part5-single-agents.md`](labs/part5-single-agents.md)
 
 - What is an AI agent (vs. a raw LLM call)
 - The `ChatAgent` pattern and the Microsoft Agent Framework
@@ -131,9 +144,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 5: Multi-Agent Workflows
+### Part 6: Multi-Agent Workflows
 
-**Lab guide:** [`labs/part5-multi-agent-workflows.md`](labs/part5-multi-agent-workflows.md)
+**Lab guide:** [`labs/part6-multi-agent-workflows.md`](labs/part6-multi-agent-workflows.md)
 
 - Multi-agent pipelines: Researcher → Writer → Editor
 - Sequential orchestration and feedback loops
@@ -150,9 +163,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 6: Zava Creative Writer — Capstone Application
+### Part 7: Zava Creative Writer — Capstone Application
 
-**Lab guide:** [`labs/part6-zava-creative-writer.md`](labs/part6-zava-creative-writer.md)
+**Lab guide:** [`labs/part7-zava-creative-writer.md`](labs/part7-zava-creative-writer.md)
 
 - A production-style multi-agent app with 4 specialized agents
 - Sequential pipeline with evaluator-driven feedback loops
@@ -169,9 +182,9 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 7: Voice Transcription with Whisper
+### Part 8: Voice Transcription with Whisper
 
-**Lab guide:** [`labs/part7-whisper-voice-transcription.md`](labs/part7-whisper-voice-transcription.md)
+**Lab guide:** [`labs/part8-whisper-voice-transcription.md`](labs/part8-whisper-voice-transcription.md)
 
 - Speech-to-text transcription using OpenAI Whisper running locally
 - Privacy-first audio processing — audio never leaves your device
@@ -212,12 +225,13 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │       └── agents/                # Researcher, Product, Writer, Editor
 ├── labs/                          # Step-by-step lab guides
 │   ├── part1-getting-started.md
-│   ├── part2-sdk-and-apis.md
-│   ├── part3-rag-fundamentals.md
-│   ├── part4-single-agents.md
-│   ├── part5-multi-agent-workflows.md
-│   ├── part6-zava-creative-writer.md
-│   └── part7-whisper-voice-transcription.md
+│   ├── part2-foundry-local-sdk.md
+│   ├── part3-sdk-and-apis.md
+│   ├── part4-rag-fundamentals.md
+│   ├── part5-single-agents.md
+│   ├── part6-multi-agent-workflows.md
+│   ├── part7-zava-creative-writer.md
+│   └── part8-whisper-voice-transcription.md
 ├── samples/
 │   └── audio/                     # Zava-themed WAV files for Part 7
 │       ├── generate_samples.py    # TTS script (pyttsx3) to create WAVs
@@ -234,7 +248,8 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 | Foundry Local website | [foundrylocal.ai](https://foundrylocal.ai) |
 | Model catalog | [foundrylocal.ai/models](https://www.foundrylocal.ai/models) |
 | Foundry Local GitHub | [github.com/microsoft/foundry-local](https://github.com/microsoft/foundry-local) |
-| Getting started guide | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started) |
+| Getting started guide | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
+| Foundry Local SDK Reference | [Microsoft Learn — SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
 | Microsoft Agent Framework | [Microsoft Learn — Agent Framework](https://learn.microsoft.com/en-us/agent-framework/) |
 | OpenAI Whisper | [github.com/openai/whisper](https://github.com/openai/whisper) |
 

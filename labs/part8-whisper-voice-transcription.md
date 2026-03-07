@@ -1,6 +1,6 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 7: Voice Transcription with Whisper and Foundry Local
+# Part 8: Voice Transcription with Whisper and Foundry Local
 
 > **Goal:** Use the OpenAI Whisper model running locally through Foundry Local to transcribe audio files — completely on-device, no cloud required.
 
@@ -30,7 +30,7 @@ By the end of this lab you will be able to:
 | **Foundry Local CLI** | Version **0.8.101 or earlier** (Whisper models are not available in versions above 0.8.101) |
 | **OS** | Windows 10/11 (x64 or ARM64) |
 | **Language runtime** | **Python 3.9+** and/or **Node.js 18+** and/or **.NET 10 SDK** ([Download .NET](https://dotnet.microsoft.com/download/dotnet/10.0)) |
-| **Completed** | [Part 1: Getting Started](part1-getting-started.md) and [Part 2: SDKs and APIs](part2-sdk-and-apis.md) |
+| **Completed** | [Part 1: Getting Started](part1-getting-started.md), [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md), and [Part 3: SDKs and APIs](part3-sdk-and-apis.md) |
 
 > **Important Version Requirement:** Whisper models are **only available in Foundry Local v0.8.101 and earlier**. If you have a newer version installed, you will need to downgrade. Check your version with:
 > ```bash
@@ -48,7 +48,7 @@ The OpenAI Whisper model is a general-purpose speech recognition model trained o
 - The SDK provides an `AudioClient` (separate from the `ChatClient` used for text models)
 - The API is **OpenAI-compatible** — same `POST /v1/audio/transcriptions` endpoint format
 
-![Whisper Transcription Architecture](../images/part7-whisper-architecture.png)
+![Whisper Transcription Architecture](../images/part8-whisper-architecture.png)
 
 ### Whisper Model Variants
 
@@ -68,12 +68,15 @@ The OpenAI Whisper model is a general-purpose speech recognition model trained o
 This lab includes pre-built WAV files based on Zava DIY product scenarios. Generate them with the included script:
 
 ```bash
-# From the repo root — activate the .venv first
-# Windows:
+# From the repo root — create and activate a .venv first
+python -m venv .venv
+
+# Windows (PowerShell):
 .venv\Scripts\Activate.ps1
 # macOS:
 source .venv/bin/activate
 
+pip install openai
 python samples/audio/generate_samples.py
 ```
 
@@ -91,31 +94,144 @@ This creates five WAV files in `samples/audio/`:
 
 ---
 
-### Exercise 1 — Download the Whisper Model
+### Exercise 1 — Download the Whisper Model Using the SDK
 
-First, verify the model is available in your Foundry Local catalog:
+Due to CLI incompatibilities with Whisper models in newer Foundry Local versions, use the **SDK** to download and load the model. Choose your language:
 
+<details>
+<summary><b>🐍 Python</b></summary>
+
+**Install the SDK:**
 ```bash
-foundry model info whisper-medium
+pip install foundry-local-sdk
 ```
 
-Download the CPU-optimized variant:
+```python
+from foundry_local import FoundryLocalManager
 
-```bash
-foundry model download whisper-medium --device CPU
+alias = "whisper-medium"
+
+# Start the service
+manager = FoundryLocalManager()
+manager.start_service()
+
+# Check catalog info
+info = manager.get_model_info(alias)
+print(f"Model: {info.id}")
+print(f"Task:  {info.task}")
+
+# Check if already cached
+cached = manager.list_cached_models()
+is_cached = any(m.id == info.id for m in cached) if info else False
+
+if is_cached:
+    print("Whisper model already downloaded.")
+else:
+    print("Downloading Whisper model (this may take several minutes)...")
+    manager.download_model(alias)
+    print("Download complete.")
+
+# Load the model into memory
+manager.load_model(alias)
+print(f"Whisper model loaded. Endpoint: {manager.endpoint}")
 ```
 
-Or download a specific variant by model ID:
-
+Save as `download_whisper.py` and run:
 ```bash
-foundry model download openai-whisper-medium-generic-cpu:1
+python download_whisper.py
 ```
 
-Verify it's cached:
+</details>
 
+<details>
+<summary><b>📘 JavaScript</b></summary>
+
+**Install the SDK:**
 ```bash
-foundry cache list
+npm install foundry-local-sdk
 ```
+
+```javascript
+import { FoundryLocalManager } from "foundry-local-sdk";
+
+const alias = "whisper-medium";
+const manager = new FoundryLocalManager();
+
+// Start the service
+await manager.startService();
+
+// Check catalog info
+const info = await manager.getModelInfo(alias);
+console.log(`Model: ${info.id}`);
+
+// Check if already cached
+const cached = await manager.listCachedModels();
+const isCached = cached.some((m) => m.id === info?.id);
+
+if (isCached) {
+  console.log("Whisper model already downloaded.");
+} else {
+  console.log("Downloading Whisper model (this may take several minutes)...");
+  await manager.downloadModel(alias);
+  console.log("Download complete.");
+}
+
+// Load the model into memory
+const modelInfo = await manager.loadModel(alias);
+console.log(`Whisper model loaded. Endpoint: ${manager.endpoint}`);
+```
+
+Save as `download-whisper.mjs` and run:
+```bash
+node download-whisper.mjs
+```
+
+</details>
+
+<details>
+<summary><b>💜 C#</b></summary>
+
+**Install the SDK:**
+```bash
+dotnet add package Microsoft.AI.Foundry.Local
+```
+
+```csharp
+using Microsoft.AI.Foundry.Local;
+
+var alias = "whisper-medium";
+
+// Start the service
+Console.WriteLine("Starting Foundry Local service...");
+var manager = await FoundryLocalManager.StartServiceAsync();
+
+// Check catalog info
+var info = await manager.GetModelInfoAsync(aliasOrModelId: alias);
+Console.WriteLine($"Model: {info?.ModelId}");
+
+// Check if already cached
+var cached = await manager.ListCachedModelsAsync();
+var isCached = cached.Any(m => m.ModelId == info?.ModelId);
+
+if (isCached)
+{
+    Console.WriteLine("Whisper model already downloaded.");
+}
+else
+{
+    Console.WriteLine("Downloading Whisper model (this may take several minutes)...");
+    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    Console.WriteLine("Download complete.");
+}
+
+// Load the model into memory
+var model = await manager.LoadModelAsync(aliasOrModelId: alias);
+Console.WriteLine($"Whisper model loaded. Endpoint: {manager.Endpoint}");
+```
+
+</details>
+
+> **Why SDK instead of CLI?** The Foundry Local CLI has known incompatibilities with Whisper model download commands in certain versions. The SDK provides a reliable, version-independent way to download and load models programmatically.
 
 ---
 
@@ -130,7 +246,9 @@ Whisper transcription uses the **OpenAI-compatible audio transcription API** (`P
 | **SDK method** | `client.audio.transcriptions.create()` | `client.audio.transcriptions.create()` | `audioClient.TranscribeAudioAsync()` |
 | **Input** | File object (`open(path, "rb")`) | `fs.createReadStream(path)` | Audio file path (string) |
 | **Output** | `result.text` | `result.text` | `result.Text` |
-| **Model init** | `FoundryLocalManager()` + OpenAI client | `FoundryLocalManager()` + OpenAI client | `FoundryLocalManager.CreateAsync()` + `AudioClient` |
+| **Model init** | `FoundryLocalManager(alias)` bootstrap | `manager.init(alias)` one-liner | `FoundryLocalManager.CreateAsync()` + `catalog.GetModelAsync()` |
+
+> **SDK Patterns:** Python uses the constructor bootstrap `FoundryLocalManager(alias)`, JavaScript uses `manager.init(alias)`, and C# uses the object-oriented `CreateAsync()` + catalog pattern. See [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md) for full details.
 
 ---
 
@@ -164,47 +282,23 @@ Create a file `foundry-local-whisper.py`:
 
 ```python
 import sys
+import os
 import openai
 from foundry_local import FoundryLocalManager
 
 model_alias = "whisper-medium"
 audio_file = sys.argv[1] if len(sys.argv) > 1 else "sample.wav"
 
-import os
 if not os.path.exists(audio_file):
     print(f"Audio file not found: {audio_file}")
     print("Usage: python foundry-local-whisper.py <path-to-audio-file>")
     sys.exit(1)
 
-# Step 1: Start Foundry Local service
-print("Starting Foundry Local service...")
-manager = FoundryLocalManager()
-manager.start_service()
+# Step 1: Bootstrap — starts service, downloads, and loads the model
+print(f"Initializing Foundry Local with model: {model_alias}...")
+manager = FoundryLocalManager(model_alias)
 
-# Step 2: Download and load the Whisper model
-cached = manager.list_cached_models()
-catalog_info = manager.get_model_info(model_alias)
-is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
-
-if is_cached:
-    print(f"Model already downloaded: {model_alias}")
-else:
-    print(f"Downloading model: {model_alias} (this may take several minutes)...")
-    def on_progress(progress):
-        bar_width = 30
-        filled = int(progress / 100 * bar_width)
-        bar = "█" * filled + "░" * (bar_width - filled)
-        sys.stdout.write(f"\rDownloading: [{bar}] {progress:.1f}%")
-        if progress >= 100:
-            sys.stdout.write("\n")
-        sys.stdout.flush()
-    manager.download_model(model_alias, progress_callback=on_progress)
-    print(f"Download complete: {model_alias}")
-
-print(f"Loading model: {model_alias}...")
-manager.load_model(model_alias)
-
-# Step 3: Transcribe audio using the OpenAI-compatible API
+# Step 2: Transcribe audio using the OpenAI-compatible API
 client = openai.OpenAI(
     base_url=manager.endpoint,
     api_key=manager.api_key
@@ -237,9 +331,8 @@ python foundry-local-whisper.py ../samples/audio/zava-workshop-setup.wav
 
 | Method | Purpose |
 |--------|---------|
-| `manager.start_service()` | Start the Foundry Local service |
-| `manager.download_model(alias)` | Download the Whisper model |
-| `manager.load_model(alias)` | Load the Whisper model into memory |
+| `FoundryLocalManager(alias)` | Bootstrap: start service, download, and load in one call |
+| `manager.endpoint` | Get the dynamic API endpoint |
 | `client.audio.transcriptions.create()` | Transcribe audio via OpenAI-compatible API |
 | `result.text` | The transcribed text |
 
@@ -263,7 +356,6 @@ Create a file `foundry-local-whisper.mjs`:
 import { OpenAI } from "openai";
 import { FoundryLocalManager } from "foundry-local-sdk";
 import fs from "node:fs";
-import path from "node:path";
 
 const modelAlias = "whisper-medium";
 const audioFile = process.argv[2] || "sample.wav";
@@ -274,35 +366,12 @@ if (!fs.existsSync(audioFile)) {
   process.exit(1);
 }
 
-// Step 1: Start Foundry Local service
-console.log("Starting Foundry Local service...");
+// Step 1: Initialize — starts service, downloads, and loads the model
+console.log(`Initializing Foundry Local with model: ${modelAlias}...`);
 const manager = new FoundryLocalManager();
-await manager.startService();
+const modelInfo = await manager.init(modelAlias);
 
-// Step 2: Download and load the Whisper model
-const cachedModels = await manager.listCachedModels();
-const catalogInfo = await manager.getModelInfo(modelAlias);
-const isAlreadyCached = cachedModels.some((m) => m.id === catalogInfo?.id);
-
-if (isAlreadyCached) {
-  console.log(`Model already downloaded: ${modelAlias}`);
-} else {
-  console.log(`Downloading model: ${modelAlias} (this may take several minutes)...`);
-  await manager.downloadModel(modelAlias, undefined, false, (progress) => {
-    const barWidth = 30;
-    const filled = Math.round((progress / 100) * barWidth);
-    const empty = barWidth - filled;
-    const bar = "█".repeat(filled) + "░".repeat(empty);
-    process.stdout.write(`\r[Download] [${bar}] ${progress.toFixed(1)}%`);
-    if (progress >= 100) process.stdout.write("\n");
-  });
-  console.log(`Download complete: ${modelAlias}`);
-}
-
-console.log(`Loading model: ${modelAlias}...`);
-const modelInfo = await manager.loadModel(modelAlias);
-
-// Step 3: Transcribe audio using the OpenAI-compatible API
+// Step 2: Transcribe audio using the OpenAI-compatible API
 const client = new OpenAI({
   baseURL: manager.endpoint,
   apiKey: manager.apiKey,
@@ -334,9 +403,8 @@ node foundry-local-whisper.mjs ../samples/audio/zava-project-planning.wav
 
 | Method | Purpose |
 |--------|---------|
-| `await manager.startService()` | Start the Foundry Local service |
-| `await manager.downloadModel(alias)` | Download the Whisper model |
-| `await manager.loadModel(alias)` | Load the Whisper model into memory |
+| `await manager.init(alias)` | Initialize: start service, download, and load in one call |
+| `manager.endpoint` | Get the dynamic API endpoint |
 | `client.audio.transcriptions.create()` | Transcribe audio via OpenAI-compatible API |
 | `result.text` | The transcribed text |
 
@@ -480,10 +548,8 @@ from foundry_local import FoundryLocalManager
 model_alias = "whisper-medium"
 samples_dir = os.path.join("..", "samples", "audio")
 
-# Start service and load model
-manager = FoundryLocalManager()
-manager.start_service()
-manager.load_model(model_alias)
+# Bootstrap — starts service, downloads, and loads the model
+manager = FoundryLocalManager(model_alias)
 
 client = openai.OpenAI(
     base_url=manager.endpoint,
@@ -528,10 +594,9 @@ import path from "node:path";
 const modelAlias = "whisper-medium";
 const samplesDir = path.join("..", "samples", "audio");
 
-// Start service and load model
+// Initialize — starts service, downloads, and loads the model
 const manager = new FoundryLocalManager();
-await manager.startService();
-const modelInfo = await manager.loadModel(modelAlias);
+const modelInfo = await manager.init(modelAlias);
 
 const client = new OpenAI({
   baseURL: manager.endpoint,
@@ -654,7 +719,7 @@ with open("audio.wav", "rb") as f:
 print(result.text)
 ```
 
-**Key insight:** Same `openai.OpenAI` client, same `manager.endpoint` — just a different API method. The OpenAI SDK's `client.audio.transcriptions.create()` maps to `POST /v1/audio/transcriptions`.
+**Key insight:** Same `openai.OpenAI` client, same `manager.endpoint` — just a different API method. Use `FoundryLocalManager(alias)` to bootstrap, then call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`.
 
 </details>
 
@@ -677,7 +742,7 @@ const result = await client.audio.transcriptions.create({
 console.log(result.text);
 ```
 
-**Key insight:** Same `OpenAI` client, same `manager.endpoint` — just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. Pass a readable stream for the file.
+**Key insight:** Same `OpenAI` client, same `manager.endpoint` — just call `client.audio.transcriptions.create()` instead of `client.chat.completions.create()`. Use `manager.init(alias)` for one-line setup.
 
 </details>
 
@@ -776,7 +841,7 @@ Try these modifications to deepen your understanding:
 
 ## Comparison: Chat Models vs. Whisper
 
-| Aspect | Chat Models (Parts 2-6) | Whisper — Python/JS | Whisper — C# |
+| Aspect | Chat Models (Parts 3-7) | Whisper — Python/JS | Whisper — C# |
 |--------|------------------------|--------------------|--------------|
 | **Task type** | `chat` | `automatic-speech-recognition` | `automatic-speech-recognition` |
 | **Input** | Text messages (JSON) | Audio files (WAV/MP3/M4A) | Audio files (WAV/MP3/M4A) |
@@ -807,7 +872,8 @@ Try these modifications to deepen your understanding:
 
 | Resource | Link |
 |----------|------|
-| Foundry Local docs | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started) |
+| Foundry Local docs | [Microsoft Learn — Foundry Local](https://learn.microsoft.com/en-us/azure/foundry-local/get-started) |
+| Foundry Local SDK Reference | [Microsoft Learn — SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
 | OpenAI Whisper model | [github.com/openai/whisper](https://github.com/openai/whisper) |
 | Foundry Local website | [foundrylocal.ai](https://foundrylocal.ai) |
 
@@ -820,9 +886,10 @@ Congratulations — you've completed the full Foundry Local Workshop! You've gon
 | Part | What You Built |
 |------|---------------|
 | 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Connected from Python/JS/C# using the SDK |
-| 3 | Built a RAG pipeline with local knowledge retrieval |
-| 4 | Created AI agents with personas and structured output |
-| 5 | Orchestrated multi-agent pipelines with feedback loops |
-| 6 | Explored a production capstone app — the Zava Creative Writer |
-| 7 | Transcribed audio with Whisper — speech-to-text on-device |
+| 2 | Mastered the Foundry Local SDK API — service, catalog, cache, model management |
+| 3 | Connected from Python/JS/C# using the SDK with OpenAI |
+| 4 | Built a RAG pipeline with local knowledge retrieval |
+| 5 | Created AI agents with personas and structured output |
+| 6 | Orchestrated multi-agent pipelines with feedback loops |
+| 7 | Explored a production capstone app — the Zava Creative Writer |
+| 8 | Transcribed audio with Whisper — speech-to-text on-device |

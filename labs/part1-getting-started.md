@@ -140,4 +140,4 @@ Foundry Local runs as a **local HTTP service** that exposes an OpenAI-compatible
 
 ## Next Steps
 
-Continue to [Part 2: Using the Foundry Local SDK](part2-sdk-and-apis.md) to learn how to integrate Foundry Local into your Python, JavaScript, or C# applications.
+Continue to [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md) to master the SDK API for managing models, services, and caching programmatically.

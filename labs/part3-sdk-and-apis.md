@@ -1,10 +1,10 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 2: Using the Foundry Local SDK
+# Part 3: Using the Foundry Local SDK with OpenAI
 
 ## Overview
 
-In Part 1 you used the Foundry Local CLI to run models interactively. Now you'll learn to **integrate Foundry Local into your applications** using the SDK and the OpenAI-compatible API.
+In Part 1 you used the Foundry Local CLI to run models interactively. In Part 2 you explored the full SDK API surface. Now you'll learn to **integrate Foundry Local into your applications** using the SDK and the OpenAI-compatible API.
 
 Foundry Local provides SDKs for three languages. Choose the one you're most comfortable with — the concepts are identical across all three.
 
@@ -22,7 +22,7 @@ By the end of this lab you will be able to:
 
 ## Prerequisites
 
-Complete [Part 1: Getting Started with Foundry Local](part1-getting-started.md) first.
+Complete [Part 1: Getting Started with Foundry Local](part1-getting-started.md) and [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md) first.
 
 Install **one** of the following language runtimes:
 - **Python 3.9+** — [python.org/downloads](https://www.python.org/downloads/)
@@ -41,12 +41,10 @@ The Foundry Local SDK manages the **control plane** (starting the service, downl
 
 ## Lab Exercises
 
-### Choose Your Language Track
+### Exercise 1: Setup Your Environment
 
 <details>
-<summary><h3>🐍 Python Track</h3></summary>
-
-#### Setup
+<summary><b>🐍 Python</b></summary>
 
 ```bash
 cd python
@@ -68,9 +66,51 @@ The `requirements.txt` installs:
 - `openai` — The OpenAI Python SDK
 - `agent-framework` — Microsoft Agent Framework (used in later parts)
 
-#### Exercise 1: Basic Chat Completion
+</details>
 
-Open `foundry-local.py` and examine the code:
+<details>
+<summary><b>📘 JavaScript</b></summary>
+
+```bash
+cd javascript
+npm install
+```
+
+The `package.json` installs:
+- `foundry-local-sdk` — The Foundry Local SDK
+- `openai` — The OpenAI Node.js SDK
+
+</details>
+
+<details>
+<summary><b>💜 C#</b></summary>
+
+```bash
+cd csharp
+dotnet restore
+dotnet build
+```
+
+The `csharp.csproj` uses:
+- `Microsoft.AI.Foundry.Local` — The Foundry Local SDK (NuGet)
+- `OpenAI` — The OpenAI C# SDK (NuGet)
+
+> **Project structure:** The C# project uses a command-line router in `Program.cs` that dispatches to separate example files. Run `dotnet run chat` (or just `dotnet run`) for this part. Other parts use `dotnet run rag`, `dotnet run agent`, and `dotnet run multi`.
+
+</details>
+
+---
+
+### Exercise 2: Basic Chat Completion
+
+Open the basic chat example for your language and examine the code. Each script follows the same three-step pattern:
+
+1. **Start the service** — `FoundryLocalManager` starts the Foundry Local runtime
+2. **Download and load the model** — check the cache, download if needed, then load into memory
+3. **Create an OpenAI client** — connect to the local endpoint and send a streaming chat completion
+
+<details>
+<summary><b>🐍 Python — <code>python/foundry-local.py</code></b></summary>
 
 ```python
 import sys
@@ -127,43 +167,15 @@ for chunk in stream:
 print()
 ```
 
-Run it:
+**Run it:**
 ```bash
 python foundry-local.py
 ```
 
-#### Key Python SDK Methods
-
-| Method | Purpose |
-|--------|---------|
-| `FoundryLocalManager()` | Create manager instance |
-| `manager.start_service()` | Start the Foundry Local service |
-| `manager.list_cached_models()` | List models downloaded on your device |
-| `manager.get_model_info(alias)` | Get model ID and metadata |
-| `manager.download_model(alias, progress_callback=fn)` | Download a model with optional progress callback |
-| `manager.load_model(alias)` | Load a model into memory |
-| `manager.endpoint` | Get the dynamic endpoint URL |
-| `manager.api_key` | Get the API key (placeholder for local) |
-
 </details>
 
 <details>
-<summary><h3>📘 JavaScript Track</h3></summary>
-
-#### Setup
-
-```bash
-cd javascript
-npm install
-```
-
-The `package.json` installs:
-- `foundry-local-sdk` — The Foundry Local SDK
-- `openai` — The OpenAI Node.js SDK
-
-#### Exercise 1: Basic Chat Completion
-
-Open `foundry-local.mjs` and examine the code:
+<summary><b>📘 JavaScript — <code>javascript/foundry-local.mjs</code></b></summary>
 
 ```javascript
 import { OpenAI } from "openai";
@@ -222,46 +234,15 @@ for await (const chunk of stream) {
 console.log();
 ```
 
-Run it:
+**Run it:**
 ```bash
 node foundry-local.mjs
 ```
 
-#### Key JavaScript SDK Methods
-
-| Method | Purpose |
-|--------|---------|
-| `new FoundryLocalManager()` | Create manager instance |
-| `await manager.startService()` | Start the Foundry Local service |
-| `await manager.listCachedModels()` | List models downloaded on your device |
-| `await manager.getModelInfo(alias)` | Get model ID and metadata |
-| `await manager.downloadModel(alias, ..., progressCb)` | Download a model with optional progress callback |
-| `await manager.loadModel(alias)` | Load a model into memory and return model info |
-| `manager.endpoint` | Get the dynamic endpoint URL |
-| `manager.apiKey` | Get the API key (placeholder for local) |
-
 </details>
 
 <details>
-<summary><h3>💜 C# Track</h3></summary>
-
-#### Setup
-
-```bash
-cd csharp
-dotnet restore
-dotnet build
-```
-
-The `csharp.csproj` uses:
-- `Microsoft.AI.Foundry.Local` — The Foundry Local SDK (NuGet)
-- `OpenAI` — The OpenAI C# SDK (NuGet)
-
-> **Project structure:** The C# project uses a command-line router in `Program.cs` that dispatches to separate example files. Run `dotnet run chat` (or just `dotnet run`) for this part. Other parts use `dotnet run rag`, `dotnet run agent`, and `dotnet run multi`.
-
-#### Exercise 1: Basic Chat Completion
-
-Open `BasicChat.cs` and examine the code:
+<summary><b>💜 C# — <code>csharp/BasicChat.cs</code></b></summary>
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
@@ -319,12 +300,132 @@ foreach (var update in completionUpdates)
 Console.WriteLine();
 ```
 
-Run it:
+**Run it:**
 ```bash
 dotnet run chat
 ```
 
-#### Key C# SDK Methods
+</details>
+
+---
+
+### Exercise 3: Experiment with Prompts
+
+Once your basic example runs, try modifying the code:
+
+1. **Change the user message** — try different questions
+2. **Add a system prompt** — give the model a persona
+3. **Turn off streaming** — set `stream=False` and print the full response at once
+4. **Try a different model** — change the alias from `phi-3.5-mini` to another model from `foundry model list`
+
+<details>
+<summary><b>🐍 Python</b></summary>
+
+```python
+# Add a system prompt — give the model a persona:
+stream = client.chat.completions.create(
+    model=manager.get_model_info(alias).id,
+    messages=[
+        {"role": "system", "content": "You are a pirate. Answer everything in pirate speak."},
+        {"role": "user", "content": "What is the golden ratio?"}
+    ],
+    stream=True,
+)
+
+# Or turn off streaming:
+response = client.chat.completions.create(
+    model=manager.get_model_info(alias).id,
+    messages=[{"role": "user", "content": "What is the golden ratio?"}],
+    stream=False,
+)
+print(response.choices[0].message.content)
+```
+
+</details>
+
+<details>
+<summary><b>📘 JavaScript</b></summary>
+
+```javascript
+// Add a system prompt — give the model a persona:
+const stream = await client.chat.completions.create({
+  model: modelInfo.id,
+  messages: [
+    { role: "system", content: "You are a pirate. Answer everything in pirate speak." },
+    { role: "user", content: "What is the golden ratio?" },
+  ],
+  stream: true,
+});
+
+// Or turn off streaming:
+const response = await client.chat.completions.create({
+  model: modelInfo.id,
+  messages: [{ role: "user", content: "What is the golden ratio?" }],
+  stream: false,
+});
+console.log(response.choices[0].message.content);
+```
+
+</details>
+
+<details>
+<summary><b>💜 C#</b></summary>
+
+```csharp
+// Add a system prompt — give the model a persona:
+var completionUpdates = chatClient.CompleteChatStreaming(
+    new ChatMessage[]
+    {
+        new SystemChatMessage("You are a pirate. Answer everything in pirate speak."),
+        new UserChatMessage("What is the golden ratio?")
+    }
+);
+
+// Or turn off streaming:
+var response = chatClient.CompleteChat("What is the golden ratio?");
+Console.WriteLine(response.Value.Content[0].Text);
+```
+
+</details>
+
+---
+
+### SDK Method Reference
+
+<details>
+<summary><b>🐍 Python SDK Methods</b></summary>
+
+| Method | Purpose |
+|--------|---------|
+| `FoundryLocalManager()` | Create manager instance |
+| `manager.start_service()` | Start the Foundry Local service |
+| `manager.list_cached_models()` | List models downloaded on your device |
+| `manager.get_model_info(alias)` | Get model ID and metadata |
+| `manager.download_model(alias, progress_callback=fn)` | Download a model with optional progress callback |
+| `manager.load_model(alias)` | Load a model into memory |
+| `manager.endpoint` | Get the dynamic endpoint URL |
+| `manager.api_key` | Get the API key (placeholder for local) |
+
+</details>
+
+<details>
+<summary><b>📘 JavaScript SDK Methods</b></summary>
+
+| Method | Purpose |
+|--------|---------|
+| `new FoundryLocalManager()` | Create manager instance |
+| `await manager.startService()` | Start the Foundry Local service |
+| `await manager.listCachedModels()` | List models downloaded on your device |
+| `await manager.getModelInfo(alias)` | Get model ID and metadata |
+| `await manager.downloadModel(alias, ..., progressCb)` | Download a model with optional progress callback |
+| `await manager.loadModel(alias)` | Load a model into memory and return model info |
+| `manager.endpoint` | Get the dynamic endpoint URL |
+| `manager.apiKey` | Get the API key (placeholder for local) |
+
+</details>
+
+<details>
+<summary><b>💜 C# SDK Methods</b></summary>
 
 | Method | Purpose |
 |--------|---------|
@@ -340,23 +441,6 @@ dotnet run chat
 
 ---
 
-### Exercise 2: Experiment with Prompts
-
-Once your basic example runs, try modifying the code:
-
-1. **Change the user message** — try different questions
-2. **Add a system prompt** — give the model a persona:
-   ```python
-   messages=[
-       {"role": "system", "content": "You are a pirate. Answer everything in pirate speak."},
-       {"role": "user", "content": "What is the golden ratio?"}
-   ]
-   ```
-3. **Turn off streaming** — set `stream=False` and print the full response at once
-4. **Try a different model** — change the alias from `phi-3.5-mini` to another model from `foundry model list`
-
----
-
 ## Key Takeaways
 
 - The **Foundry Local SDK** handles the control plane (starting the service, loading models)
@@ -369,4 +453,4 @@ Once your basic example runs, try modifying the code:
 
 ## Next Steps
 
-Continue to [Part 3: Building a RAG Application](part3-rag-fundamentals.md) to learn how to build a Retrieval-Augmented Generation pipeline running entirely on your device.
+Continue to [Part 4: Building a RAG Application](part4-rag-fundamentals.md) to learn how to build a Retrieval-Augmented Generation pipeline running entirely on your device.

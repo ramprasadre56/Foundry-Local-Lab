@@ -1,49 +1,44 @@
+"""
+Foundry Local — Single Agent with Microsoft Agent Framework
+
+Demonstrates creating a single AI agent using FoundryLocalClient
+from the Microsoft Agent Framework. The agent runs entirely on-device
+via Foundry Local — no cloud required.
+"""
+
 import asyncio
-from foundry_local import FoundryLocalManager
-from agent_framework import ChatAgent
-from agent_framework.openai import OpenAIChatClient
+
+from agent_framework.microsoft import FoundryLocalClient
 
 
 async def main():
-    # Start Foundry Local and load a model
-    alias = "phi-3.5-mini"
+    alias = "phi-4-mini"
 
-    print("Starting Foundry Local service...")
-    manager = FoundryLocalManager()
-    manager.start_service()
+    print("=== Basic Foundry Local Client Agent Example ===")
 
-    # Check if model is already downloaded
-    cached = manager.list_cached_models()
-    catalog_info = manager.get_model_info(alias)
-    is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
+    # FoundryLocalClient handles service start, model download, and loading
+    client = FoundryLocalClient(model_id=alias)
+    print(f"Client Model ID: {client.model_id}")
+    print(f"Endpoint: {client.manager.endpoint}\n")
 
-    if is_cached:
-        print(f"Model already downloaded: {alias}")
-    else:
-        print(f"Downloading model: {alias} (this may take several minutes)...")
-        manager.download_model(alias)
-        print(f"Download complete: {alias}")
-
-    print(f"Loading model: {alias}...")
-    manager.load_model(alias)
-    model_info = manager.get_model_info(alias)
-    print(f"Model info: {model_info}")
-    print(f"Foundry Local endpoint: {manager.endpoint}")
-
-    # Create a single ChatAgent backed by the local model
-    agent = ChatAgent(
-        chat_client=OpenAIChatClient(
-            model_id=model_info.id,
-            base_url=manager.endpoint,
-            api_key=manager.api_key,  # API key is not required for local usage
-        ),
-        instructions="You are good at telling jokes.",
+    # Create an agent with system instructions
+    agent = client.as_agent(
         name="Joker",
+        instructions="You are good at telling jokes.",
     )
 
-    # Run the agent with a user prompt
+    # Non-streaming: get the complete response at once
+    print("--- Non-streaming ---")
     result = await agent.run("Tell me a joke about a pirate.")
-    print(result.text)
+    print(f"Agent: {result}\n")
+
+    # Streaming: get results as they are generated
+    print("--- Streaming ---")
+    print("Agent: ", end="", flush=True)
+    async for chunk in agent.run("Tell me a joke about a programmer.", stream=True):
+        if chunk.text:
+            print(chunk.text, end="", flush=True)
+    print()
 
 
 asyncio.run(main())

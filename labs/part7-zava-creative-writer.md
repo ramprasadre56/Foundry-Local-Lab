@@ -1,10 +1,10 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 6: Zava Creative Writer — Capstone Application
+# Part 7: Zava Creative Writer — Capstone Application
 
 > **Goal:** Explore a production-style multi-agent application where four specialized agents collaborate to produce magazine-quality articles for Zava Retail DIY — running entirely on your device with Foundry Local.
 
-This is the **capstone lab** of the workshop. It brings together everything you've learned — SDK integration (Part 2), retrieval from local data (Part 3), agent personas (Part 4), and multi-agent orchestration (Part 5) — into a complete application available in **Python**, **JavaScript**, and **C#**.
+This is the **capstone lab** of the workshop. It brings together everything you've learned — SDK integration (Part 3), retrieval from local data (Part 4), agent personas (Part 5), and multi-agent orchestration (Part 6) — into a complete application available in **Python**, **JavaScript**, and **C#**.
 
 ---
 
@@ -49,7 +49,7 @@ The Zava Creative Writer uses a **sequential pipeline with evaluator-driven feed
 
 ## Prerequisites
 
-- Complete [Part 5: Multi-Agent Workflows](part5-multi-agent-workflows.md)
+- Complete [Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)
 - Foundry Local CLI installed and `phi-3.5-mini` model downloaded
 
 ---
@@ -68,6 +68,13 @@ The Python version runs as a **web service** with a REST API, demonstrating how 
 **Setup:**
 ```bash
 cd zava-creative-writer-local/src/api
+python -m venv venv
+
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# macOS:
+source venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
@@ -360,14 +367,15 @@ Congratulations — you've completed the Foundry Local Workshop! You've gone fro
 | Part | What You Built |
 |------|---------------|
 | 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Connected from Python/JS/C# using the SDK |
-| 3 | Built a RAG pipeline with local knowledge retrieval |
-| 4 | Created AI agents with personas and structured output |
-| 5 | Orchestrated multi-agent pipelines with feedback loops |
-| 6 | Explored a production capstone app — the Zava Creative Writer |
+| 2 | Mastered the Foundry Local SDK API — service, catalog, cache, model management |
+| 3 | Connected from Python/JS/C# using the SDK with OpenAI |
+| 4 | Built a RAG pipeline with local knowledge retrieval |
+| 5 | Created AI agents with personas and structured output |
+| 6 | Orchestrated multi-agent pipelines with feedback loops |
+| 7 | Explored a production capstone app — the Zava Creative Writer |
 
 **Next steps:**
-- Continue to [Part 7: Voice Transcription with Whisper](part7-whisper-voice-transcription.md) to explore speech-to-text on-device
+- Continue to [Part 8: Voice Transcription with Whisper](part8-whisper-voice-transcription.md) to explore speech-to-text on-device
 - Try different models (`phi-4-mini`, `deepseek-r1-7b`) to compare quality and speed
 - Build a frontend UI for the Zava Writer API (Python version)
 - Create your own multi-agent application for a domain you care about

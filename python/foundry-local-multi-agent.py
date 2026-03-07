@@ -1,7 +1,8 @@
 """
 Foundry Local — Multi-Agent Workflow with Microsoft Agent Framework
 
-Demonstrates a multi-agent pipeline running entirely on-device:
+Demonstrates a multi-agent pipeline running entirely on-device using
+FoundryLocalClient:
   1. Researcher agent  — gathers background information
   2. Writer agent      — drafts an article from the research
   3. Editor agent      — reviews and provides feedback
@@ -11,56 +12,23 @@ collaborate sequentially: Researcher → Writer → Editor.
 """
 
 import asyncio
-from foundry_local import FoundryLocalManager
-from agent_framework import ChatAgent
-from agent_framework.openai import OpenAIChatClient
 
-
-def create_agent(client: OpenAIChatClient, name: str, instructions: str) -> ChatAgent:
-    """Helper to create an agent with shared client settings."""
-    return ChatAgent(
-        chat_client=client,
-        instructions=instructions,
-        name=name,
-    )
+from agent_framework.microsoft import FoundryLocalClient
 
 
 async def main():
     # ── Start Foundry Local ──────────────────────────────────────────────
-    alias = "phi-3.5-mini"
+    alias = "phi-4-mini"
 
-    print("Starting Foundry Local service...")
-    manager = FoundryLocalManager()
-    manager.start_service()
+    print("=== Multi-Agent Workflow with Foundry Local ===")
 
-    # Check if model is already downloaded
-    cached = manager.list_cached_models()
-    catalog_info = manager.get_model_info(alias)
-    is_cached = any(m.id == catalog_info.id for m in cached) if catalog_info else False
-
-    if is_cached:
-        print(f"Model already downloaded: {alias}")
-    else:
-        print(f"Downloading model: {alias} (this may take several minutes)...")
-        manager.download_model(alias)
-        print(f"Download complete: {alias}")
-
-    print(f"Loading model: {alias}...")
-    manager.load_model(alias)
-    model_info = manager.get_model_info(alias)
-    print(f"Model: {model_info.id}")
-    print(f"Endpoint: {manager.endpoint}\n")
-
-    # Shared chat client backed by the local model
-    chat_client = OpenAIChatClient(
-        model_id=model_info.id,
-        base_url=manager.endpoint,
-        api_key=manager.api_key,
-    )
+    # FoundryLocalClient handles service start, model download, and loading
+    client = FoundryLocalClient(model_id=alias)
+    print(f"Model: {client.model_id}")
+    print(f"Endpoint: {client.manager.endpoint}\n")
 
     # ── Define agents ────────────────────────────────────────────────────
-    researcher = create_agent(
-        chat_client,
+    researcher = client.as_agent(
         name="Researcher",
         instructions=(
             "You are a research assistant. When given a topic, provide a concise "
@@ -69,8 +37,7 @@ async def main():
         ),
     )
 
-    writer = create_agent(
-        chat_client,
+    writer = client.as_agent(
         name="Writer",
         instructions=(
             "You are a skilled blog writer. Using the research notes provided, "
@@ -79,8 +46,7 @@ async def main():
         ),
     )
 
-    editor = create_agent(
-        chat_client,
+    editor = client.as_agent(
         name="Editor",
         instructions=(
             "You are a senior editor. Review the blog post below for clarity, "
@@ -102,23 +68,23 @@ async def main():
     research_result = await researcher.run(
         f"Research the following topic and provide key facts:\n{topic}"
     )
-    print(f"\n--- Research Notes ---\n{research_result.text}\n")
+    print(f"\n--- Research Notes ---\n{research_result}\n")
 
     # Step 2 — Write
     print("✍️  Writer is drafting the article...")
     writer_result = await writer.run(
-        f"Write a blog post based on these research notes:\n\n{research_result.text}"
+        f"Write a blog post based on these research notes:\n\n{research_result}"
     )
-    print(f"\n--- Draft Article ---\n{writer_result.text}\n")
+    print(f"\n--- Draft Article ---\n{writer_result}\n")
 
     # Step 3 — Edit
     print("📝 Editor is reviewing the article...")
     editor_result = await editor.run(
         f"Review this article for quality and accuracy.\n\n"
-        f"Research notes:\n{research_result.text}\n\n"
-        f"Article:\n{writer_result.text}"
+        f"Research notes:\n{research_result}\n\n"
+        f"Article:\n{writer_result}"
     )
-    print(f"\n--- Editor Verdict ---\n{editor_result.text}\n")
+    print(f"\n--- Editor Verdict ---\n{editor_result}\n")
 
     print("=" * 60)
     print("✅ Multi-agent workflow complete!")

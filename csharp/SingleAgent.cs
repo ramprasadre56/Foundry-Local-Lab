@@ -1,4 +1,5 @@
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Agents.AI;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -6,49 +7,15 @@ using System.ClientModel;
 namespace Examples;
 
 /// <summary>
-/// Part 4: Single AI agent with system instructions and conversation history.
-/// Implements a lightweight ChatAgent class that wraps the OpenAI ChatClient
-/// with a persistent system prompt and message history.
+/// Part 4: Single AI agent using the Microsoft Agent Framework.
+/// Uses the AsAIAgent() extension from Microsoft.Agents.AI.OpenAI
+/// to create a proper AIAgent backed by Foundry Local.
 /// </summary>
 public static class SingleAgent
 {
-    /// <summary>
-    /// A minimal agent that wraps a ChatClient with instructions and history.
-    /// </summary>
-    private sealed class ChatAgent
-    {
-        private readonly ChatClient _chatClient;
-        private readonly string _instructions;
-        private readonly List<ChatMessage> _history = [];
-
-        public string Name { get; }
-
-        public ChatAgent(ChatClient chatClient, string name, string instructions)
-        {
-            _chatClient = chatClient;
-            Name = name;
-            _instructions = instructions;
-            _history.Add(new SystemChatMessage(instructions));
-        }
-
-        /// <summary>
-        /// Send a user message and return the assistant's full response.
-        /// </summary>
-        public string Run(string userMessage)
-        {
-            _history.Add(new UserChatMessage(userMessage));
-
-            var completion = _chatClient.CompleteChat(_history);
-            var reply = completion.Value.Content[0].Text;
-
-            _history.Add(new AssistantChatMessage(reply));
-            return reply;
-        }
-    }
-
     public static async Task RunAsync()
     {
-        var alias = "phi-3.5-mini";
+        var alias = "phi-4-mini";
 
         // Step 1: Start the Foundry Local service
         Console.WriteLine("Starting Foundry Local service...");
@@ -81,30 +48,34 @@ public static class SingleAgent
         {
             Endpoint = manager.Endpoint
         });
-        var chatClient = client.GetChatClient(model?.ModelId);
 
-        // Create a single agent with a personality
-        var joker = new ChatAgent(
-            chatClient,
-            name: "Joker",
-            instructions: "You are good at telling jokes. Keep your jokes short and family-friendly."
-        );
+        // Create an AIAgent using the Agent Framework extension method
+        AIAgent joker = client
+            .GetChatClient(model?.ModelId)
+            .AsAIAgent(
+                instructions: "You are good at telling jokes. Keep your jokes short and family-friendly.",
+                name: "Joker"
+            );
 
-        Console.WriteLine($"Agent: {joker.Name}");
+        Console.WriteLine($"Agent: Joker");
         Console.WriteLine(new string('-', 40));
 
-        // Run the agent with a prompt
+        // Run the agent with a prompt (non-streaming)
         var prompt = "Tell me a joke about a pirate.";
         Console.WriteLine($"User: {prompt}\n");
 
-        var response = joker.Run(prompt);
-        Console.WriteLine($"{joker.Name}: {response}\n");
+        var response = await joker.RunAsync(prompt);
+        Console.WriteLine($"Joker: {response}\n");
 
-        // Demonstrate conversation continuity
+        // Demonstrate streaming response
         var followUp = "Now tell me one about a programmer.";
         Console.WriteLine($"User: {followUp}\n");
 
-        var response2 = joker.Run(followUp);
-        Console.WriteLine($"{joker.Name}: {response2}");
+        Console.Write("Joker: ");
+        await foreach (var update in joker.RunStreamingAsync(followUp))
+        {
+            Console.Write(update);
+        }
+        Console.WriteLine();
     }
 }

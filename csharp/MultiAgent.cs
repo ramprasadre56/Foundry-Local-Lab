@@ -1,4 +1,5 @@
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Agents.AI;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -7,42 +8,14 @@ namespace Examples;
 
 /// <summary>
 /// Part 5: Multi-agent workflow — Researcher → Writer → Editor pipeline.
-/// Three agents collaborate sequentially to produce a reviewed blog post.
+/// Three AIAgent instances collaborate sequentially to produce a reviewed blog post.
+/// Uses the Microsoft Agent Framework's AsAIAgent() extension method.
 /// </summary>
 public static class MultiAgent
 {
-    /// <summary>
-    /// A minimal agent that wraps a ChatClient with instructions and history.
-    /// </summary>
-    private sealed class ChatAgent
-    {
-        private readonly ChatClient _chatClient;
-        private readonly List<ChatMessage> _history = [];
-
-        public string Name { get; }
-
-        public ChatAgent(ChatClient chatClient, string name, string instructions)
-        {
-            _chatClient = chatClient;
-            Name = name;
-            _history.Add(new SystemChatMessage(instructions));
-        }
-
-        public string Run(string userMessage)
-        {
-            _history.Add(new UserChatMessage(userMessage));
-
-            var completion = _chatClient.CompleteChat(_history);
-            var reply = completion.Value.Content[0].Text;
-
-            _history.Add(new AssistantChatMessage(reply));
-            return reply;
-        }
-    }
-
     public static async Task RunAsync()
     {
-        var alias = "phi-3.5-mini";
+        var alias = "phi-4-mini";
 
         // Step 1: Start the Foundry Local service
         Console.WriteLine("Starting Foundry Local service...");
@@ -71,15 +44,14 @@ public static class MultiAgent
         Console.WriteLine($"Endpoint: {manager.Endpoint}\n");
 
         var key = new ApiKeyCredential(manager.ApiKey);
-        var client = new OpenAIClient(key, new OpenAIClientOptions
+        var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
         {
             Endpoint = manager.Endpoint
         });
-        var chatClient = client.GetChatClient(model?.ModelId);
+        var chatClient = openAiClient.GetChatClient(model?.ModelId);
 
-        // ── Define agents ───────────────────────────────────────────────
-        var researcher = new ChatAgent(
-            chatClient,
+        // ── Define agents using AsAIAgent() ─────────────────────────────
+        AIAgent researcher = chatClient.AsAIAgent(
             name: "Researcher",
             instructions:
                 "You are a research assistant. When given a topic, provide a concise " +
@@ -87,8 +59,7 @@ public static class MultiAgent
                 "Organize your findings as bullet points."
         );
 
-        var writer = new ChatAgent(
-            chatClient,
+        AIAgent writer = chatClient.AsAIAgent(
             name: "Writer",
             instructions:
                 "You are a skilled blog writer. Using the research notes provided, " +
@@ -96,8 +67,7 @@ public static class MultiAgent
                 "Include a catchy title. Do not make up facts beyond what is given."
         );
 
-        var editor = new ChatAgent(
-            chatClient,
+        AIAgent editor = chatClient.AsAIAgent(
             name: "Editor",
             instructions:
                 "You are a senior editor. Review the blog post below for clarity, " +
@@ -115,19 +85,19 @@ public static class MultiAgent
 
         // Step 1 — Research
         Console.WriteLine("\n[Researcher] Gathering information...");
-        var researchNotes = researcher.Run(
+        var researchNotes = await researcher.RunAsync(
             $"Research the following topic and provide key facts:\n{topic}");
         Console.WriteLine($"\n--- Research Notes ---\n{researchNotes}\n");
 
         // Step 2 — Write
         Console.WriteLine("[Writer] Drafting the article...");
-        var draft = writer.Run(
+        var draft = await writer.RunAsync(
             $"Write a blog post based on these research notes:\n\n{researchNotes}");
         Console.WriteLine($"\n--- Draft Article ---\n{draft}\n");
 
         // Step 3 — Edit
         Console.WriteLine("[Editor] Reviewing the article...");
-        var verdict = editor.Run(
+        var verdict = await editor.RunAsync(
             $"Review this article for quality and accuracy.\n\n" +
             $"Research notes:\n{researchNotes}\n\n" +
             $"Article:\n{draft}");
