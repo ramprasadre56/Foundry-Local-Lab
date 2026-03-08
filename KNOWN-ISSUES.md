@@ -182,6 +182,43 @@ All other 4 files transcribed correctly. The same file transcribed successfully 
 
 ---
 
+## 9. C# SDK Only Ships net8.0 — No Official .NET 9 or .NET 10 Target
+
+**Severity:** Documentation gap
+**Component:** `Microsoft.AI.Foundry.Local` NuGet package v0.8.2.1
+**Install command:** `dotnet add package Microsoft.AI.Foundry.Local`
+
+The NuGet package only ships a single target framework:
+
+```
+lib/
+  net8.0/
+    Microsoft.AI.Foundry.Local.dll
+```
+
+No `net9.0` or `net10.0` TFM is included. By contrast, the companion package `Microsoft.Agents.AI.OpenAI` (v1.0.0-rc3) ships `net8.0`, `net9.0`, `net10.0`, `net472`, and `netstandard2.0`.
+
+### Compatibility Testing
+
+| Target Framework | Build | Run | Notes |
+|-----------------|-------|-----|-------|
+| net8.0 | ✅ | ✅ | Officially supported — used in workshop samples |
+| net9.0 | ✅ | ❌ | Builds via forward-compat, but .NET 9 runtime not available on test machine (only 8.0.24 and 10.0.3 installed) |
+| net10.0 | ✅ | ✅ | Builds and runs via forward-compat with .NET 10.0.3 runtime |
+
+The net8.0 assembly loads on newer runtimes through .NET's forward-compatibility mechanism, so the build succeeds. However, this is undocumented and untested by the SDK team.
+
+### Why the Samples Target net8.0
+
+1. **It is the only officially shipped TFM** in the Foundry Local NuGet package
+2. **.NET 8 is the current LTS release** — the broadest install base
+3. **.NET 9 runtime is not commonly installed** — .NET 9 reached end-of-life (STS), and many machines skip directly from 8 to 10
+4. **.NET 10 (preview/RC)** is too new to target in a workshop that should work for everyone
+
+**Expected:** Future SDK releases should consider adding `net9.0` and `net10.0` TFMs alongside `net8.0` to match the pattern used by `Microsoft.Agents.AI.OpenAI` and to provide validated support for newer runtimes.
+
+---
+
 ## Environment Details
 
 | Component | Version |
