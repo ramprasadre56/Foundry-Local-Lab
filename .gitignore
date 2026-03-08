@@ -615,3 +615,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea/
+
+# Workshop output / debug logs
+*-output*.txt
+*-err*.txt
+cache-list.txt
+js-whisper-output.txt
+
+# Inspection utility (development-only)
+_inspect/
