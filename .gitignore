@@ -6,6 +6,16 @@ __pycache__/
 # Generated audio samples (regenerate with: python samples/audio/generate_samples.py)
 samples/audio/*.wav
 
+# Part 9: Custom model compilation artifacts (large binary files)
+models/
+cache_dir/
+.olive-cache/
+*.onnx
+*.onnx.data
+
+# Part 9: User-generated scripts (lab instructs users to create these)
+generate_chat_template.py
+
 # C extensions
 *.so
 

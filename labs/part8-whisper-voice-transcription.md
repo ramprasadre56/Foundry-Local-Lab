@@ -879,23 +879,6 @@ Try these modifications to deepen your understanding:
 
 ---
 
-## Workshop Complete!
+## Next Step
 
-Congratulations - you've completed the full Foundry Local Workshop! You've gone from installing the CLI to building chat apps, RAG pipelines, multi-agent systems, and now speech-to-text transcription - all running entirely on your device.
-
-| Part | What You Built |
-|------|---------------|
-| 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Mastered the Foundry Local SDK API - service, catalog, cache, model management |
-| 3 | Connected from Python/JS/C# using the SDK with OpenAI |
-| 4 | Built a RAG pipeline with local knowledge retrieval |
-| 5 | Created AI agents with personas and structured output |
-| 6 | Orchestrated multi-agent pipelines with feedback loops |
-| 7 | Explored a production capstone app - the Zava Creative Writer |
-| 8 | Transcribed audio with Whisper - speech-to-text on-device |
-
-**Next steps:**
-- Try different models (`phi-4-mini`, `deepseek-r1-7b`) to compare quality and speed
-- Build a frontend UI for the Zava Writer API (Python version)
-- Create your own multi-agent application for a domain you care about
-- Deploy to the cloud by swapping Foundry Local for Azure AI Foundry - same code, different endpoint
+Continue to [Part 9: Using Custom or Hugging Face Models](part9-custom-models.md) to compile your own models from Hugging Face and run them through Foundry Local.

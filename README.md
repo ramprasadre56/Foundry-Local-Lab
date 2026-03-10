@@ -24,6 +24,7 @@ By the end of this workshop you will be able to:
 | 6 | Orchestrate multi-agent workflows with feedback loops |
 | 7 | Explore a production capstone app - the Zava Creative Writer |
 | 8 | Transcribe audio with Whisper - speech-to-text on-device using the Foundry Local SDK |
+| 9 | Compile and run custom or Hugging Face models with ONNX Runtime GenAI and Foundry Local |
 
 ---
 
@@ -195,6 +196,19 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
+### Part 9: Using Custom or Hugging Face Models
+
+**Lab guide:** [`labs/part9-custom-models.md`](labs/part9-custom-models.md)
+
+- Compiling Hugging Face models to optimised ONNX format using the ONNX Runtime GenAI model builder
+- Hardware-specific compilation (CPU, NVIDIA GPU, DirectML, WebGPU) and quantisation (int4, fp16, bf16)
+- Creating chat-template configuration files for Foundry Local
+- Adding compiled models to the Foundry Local cache
+- Running custom models via the CLI, REST API, and OpenAI SDK
+- Reference example: compiling Qwen/Qwen3-0.6B end-to-end
+
+---
+
 ## Project Structure
 
 ```
@@ -218,11 +232,20 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── foundry-local-multi-agent.mjs # Multi-agent workflow
 │   └── package.json
 ├── zava-creative-writer-local/ # Production multi-agent app
-│   └── src/api/
-│       ├── main.py                # FastAPI server
-│       ├── orchestrator.py        # Pipeline coordinator
-│       ├── foundry_config.py      # Shared Foundry Local config
-│       └── agents/                # Researcher, Product, Writer, Editor
+│   └── src/
+│       ├── api/                   # Python FastAPI service
+│       │   ├── main.py            # FastAPI server
+│       │   ├── orchestrator.py    # Pipeline coordinator
+│       │   ├── foundry_config.py  # Shared Foundry Local config
+│       │   ├── requirements.txt
+│       │   └── agents/            # Researcher, Product, Writer, Editor
+│       ├── javascript/            # Node.js CLI app
+│       │   ├── main.mjs
+│       │   ├── foundryConfig.mjs
+│       │   └── package.json
+│       └── csharp/                # .NET 9 console app
+│           ├── Program.cs
+│           └── ZavaCreativeWriter.csproj
 ├── labs/                          # Step-by-step lab guides
 │   ├── part1-getting-started.md
 │   ├── part2-foundry-local-sdk.md
@@ -231,11 +254,15 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── part5-single-agents.md
 │   ├── part6-multi-agent-workflows.md
 │   ├── part7-zava-creative-writer.md
-│   └── part8-whisper-voice-transcription.md
+│   ├── part8-whisper-voice-transcription.md
+│   └── part9-custom-models.md
 ├── samples/
-│   └── audio/                     # Zava-themed WAV files for Part 7
+│   └── audio/                     # Zava-themed WAV files for Part 8
 │       ├── generate_samples.py    # TTS script (pyttsx3) to create WAVs
 │       └── README.md              # Sample descriptions
+├── AGENTS.md                      # Coding agent instructions
+├── package.json                   # Root devDependency (mermaid-cli)
+├── LICENSE                        # MIT licence
 └── README.md
 ```
 
@@ -252,6 +279,7 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 | Foundry Local SDK Reference | [Microsoft Learn - SDK Reference](https://learn.microsoft.com/en-us/azure/foundry-local/reference/reference-sdk) |
 | Microsoft Agent Framework | [Microsoft Learn - Agent Framework](https://learn.microsoft.com/en-us/agent-framework/) |
 | OpenAI Whisper | [github.com/openai/whisper](https://github.com/openai/whisper) |
+| ONNX Runtime GenAI | [github.com/microsoft/onnxruntime-genai](https://github.com/microsoft/onnxruntime-genai) |
 
 ---
 
