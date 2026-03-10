@@ -4,3 +4,7 @@ foundry-local-sdk>=0.1.0,<1.0.0
 openai>=1.0.0,<2.0.0
 # Microsoft Agent Framework — Foundry Local connector
 agent-framework-foundry-local>=1.0.0b1
+# Whisper transcription dependencies (Part 9)
+onnxruntime>=1.18.0
+transformers>=4.30.0
+librosa>=0.10.0

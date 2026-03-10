@@ -5,6 +5,7 @@
 // Usage: dotnet run
 
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -14,11 +15,18 @@ using System.Text.Json;
 var alias = "phi-3.5-mini";
 
 Console.WriteLine("Starting Foundry Local service...");
-var manager = await FoundryLocalManager.StartServiceAsync();
+await FoundryLocalManager.CreateAsync(
+    new Configuration
+    {
+        AppName = "ZavaCreativeWriter",
+        Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+    }, NullLogger.Instance, default);
+var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var cachedModels = await manager.ListCachedModelsAsync();
-var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+var catalog = await manager.GetCatalogAsync(default);
+var catalogModel = await catalog.GetModelAsync(alias, default);
+var isCached = await catalogModel.IsCachedAsync(default);
 
 if (isCached)
 {
@@ -27,19 +35,19 @@ if (isCached)
 else
 {
     Console.WriteLine($"Downloading model: {alias} (this may take several minutes)...");
-    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    await catalogModel.DownloadAsync(null, default);
     Console.WriteLine($"Download complete: {alias}");
 }
 
 Console.WriteLine($"Loading model: {alias}...");
-var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-var modelId = model?.ModelId ?? alias;
+await catalogModel.LoadAsync(default);
+var modelId = catalogModel.Id;
 Console.WriteLine($"Model ready: {modelId}");
 
-var key = new ApiKeyCredential(manager.ApiKey);
+var key = new ApiKeyCredential("foundry-local");
 var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
 {
-    Endpoint = manager.Endpoint
+    Endpoint = new Uri(manager.Urls[0] + "/v1")
 });
 var chatClient = openAiClient.GetChatClient(modelId);
 
@@ -102,7 +110,9 @@ while (editorResponse.Decision.StartsWith("revise", StringComparison.OrdinalIgno
     Console.WriteLine($"\n--- Revision {retryCount} ---");
 
     var resFeedback = editorResponse.ResearchFeedback ?? "No Feedback";
+    if (resFeedback.Length > 500) resFeedback = resFeedback[..500];
     var edFeedback = editorResponse.EditorFeedback ?? "No Feedback";
+    if (edFeedback.Length > 500) edFeedback = edFeedback[..500];
 
     Console.WriteLine("[Researcher] Re-researching with feedback...");
     researchResult = RunResearcher(researchContext, resFeedback);
@@ -218,6 +228,11 @@ List<Product> KeywordSearch(string query, int topK)
 
 string RunWriter(string resContext, string research, string prodContext, List<Product> prods, string assign, string fb)
 {
+    const int maxResearchChars = 1500;
+    const int maxProductChars = 150;
+    const int maxFeedbackChars = 500;
+    const int maxTokens = 1500;
+
     // Build context strings
     var researchLines = "";
     try
@@ -237,9 +252,13 @@ string RunWriter(string resContext, string research, string prodContext, List<Pr
     {
         researchLines = $"- {research}\n";
     }
+    if (researchLines.Length > maxResearchChars)
+        researchLines = researchLines[..maxResearchChars];
 
     var productLines = string.Join("\n", prods.Select(p =>
-        $"- {p.Title}: {(p.Content.Length > 200 ? p.Content[..200] : p.Content)}"));
+        $"- {p.Title}: {(p.Content.Length > maxProductChars ? p.Content[..maxProductChars] : p.Content)}"));
+
+    var trimmedFeedback = fb.Length > maxFeedbackChars ? fb[..maxFeedbackChars] : fb;
 
     var userMessage = $"""
         # Assignment
@@ -258,7 +277,7 @@ string RunWriter(string resContext, string research, string prodContext, List<Pr
         {productLines}
 
         # Feedback from editor
-        {fb}
+        {trimmedFeedback}
         """;
 
     var systemPrompt = """
@@ -281,16 +300,23 @@ string RunWriter(string resContext, string research, string prodContext, List<Pr
             new SystemChatMessage(systemPrompt),
             new UserChatMessage(userMessage)
         },
-        new ChatCompletionOptions { MaxOutputTokenCount = 2000 });
+        new ChatCompletionOptions { MaxOutputTokenCount = maxTokens });
 
-    foreach (var update in completionUpdates)
+    try
     {
-        if (update.ContentUpdate.Count > 0)
+        foreach (var update in completionUpdates)
         {
-            var text = update.ContentUpdate[0].Text;
-            Console.Write(text);
-            result.Append(text);
+            if (update.ContentUpdate.Count > 0)
+            {
+                var text = update.ContentUpdate[0].Text;
+                Console.Write(text);
+                result.Append(text);
+            }
         }
+    }
+    catch (Exception ex) when (ex.Message.Contains("Premature") || ex.Message.Contains("closed"))
+    {
+        Console.WriteLine("\n[Writer] Stream closed early \u2014 using partial output.");
     }
 
     return result.ToString();

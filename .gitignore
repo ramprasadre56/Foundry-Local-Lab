@@ -3,8 +3,8 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-# Generated audio samples (regenerate with: python samples/audio/generate_samples.py)
-samples/audio/*.wav
+# Generated audio samples — committed for easy workshop use
+# Regenerate with: python samples/audio/generate_samples.py
 
 # Part 9: Custom model compilation artifacts (large binary files)
 models/
@@ -625,3 +625,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea/
+
+# Workshop output / debug logs
+*-output*.txt
+*-err*.txt
+cache-list.txt
+js-whisper-output.txt
+
+# Inspection utility (development-only)
+_inspect/

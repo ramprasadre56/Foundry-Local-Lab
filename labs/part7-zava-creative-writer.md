@@ -4,11 +4,11 @@
 
 > **Goal:** Explore a production-style multi-agent application where four specialised agents collaborate to produce magazine-quality articles for Zava Retail DIY - running entirely on your device with Foundry Local.
 
-This is the **capstone lab** of the workshop. It brings together everything you've learned - SDK integration (Part 3), retrieval from local data (Part 4), agent personas (Part 5), and multi-agent orchestration (Part 6) - into a complete application available in **Python**, **JavaScript**, and **C#**.
+This is the **capstone lab** of the workshop. It brings together everything you have learned - SDK integration (Part 3), retrieval from local data (Part 4), agent personas (Part 5), and multi-agent orchestration (Part 6) - into a complete application available in **Python**, **JavaScript**, and **C#**.
 
 ---
 
-## What You'll Explore
+## What You Will Explore
 
 | Concept | Where in the Zava Writer |
 |---------|----------------------------|
@@ -25,7 +25,7 @@ This is the **capstone lab** of the workshop. It brings together everything you'
 
 The Zava Creative Writer uses a **sequential pipeline with evaluator-driven feedback**. All three language implementations follow the same architecture:
 
-![Zava Creative Writer Architecture](../images/part6-zava-architecture.png)
+![Zava Creative Writer Architecture](../images/part7-zava-architecture.png)
 
 ### The Four Agents
 
@@ -114,7 +114,7 @@ npm install
 node main.mjs
 ```
 
-You'll see:
+You will see:
 1. Foundry Local model loading (with progress bar if downloading)
 2. Each agent executing in sequence with status messages
 3. The article streamed to the console in real time
@@ -247,16 +247,27 @@ All agents import `{ client, modelId } from "./foundryConfig.mjs"`.
 <summary><strong>💜 C# - top of Program.cs</strong></summary>
 
 ```csharp
-var manager = await FoundryLocalManager.StartServiceAsync();
+await FoundryLocalManager.CreateAsync(
+    new Configuration
+    {
+        AppName = "ZavaCreativeWriter",
+        Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+    }, NullLogger.Instance, default);
+var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var cachedModels = await manager.ListCachedModelsAsync();
-var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+var catalog = await manager.GetCatalogAsync(default);
+var catalogModel = await catalog.GetModelAsync(alias, default);
+var isCached = await catalogModel.IsCachedAsync(default);
 if (!isCached)
-    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    await catalogModel.DownloadAsync(null, default);
 
-var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-var chatClient = new OpenAIClient(key, options).GetChatClient(model?.ModelId);
+await catalogModel.LoadAsync(default);
+var key = new ApiKeyCredential("foundry-local");
+var chatClient = new OpenAIClient(key, new OpenAIClientOptions
+{
+    Endpoint = new Uri(manager.Urls[0] + "/v1")
+}).GetChatClient(catalogModel.Id);
 ```
 
 The `chatClient` is then passed to all agent functions in the same file.
@@ -305,7 +316,7 @@ Try changing one agent's behaviour and observe how it affects the pipeline:
 | **New research topic** | Change the default `researchContext` to a different subject |
 | **JSON-only researcher** | Make the researcher return 10 items instead of 3-5 |
 
-> **Tip:** Since all three languages implement the same architecture, you can make the same modification in whichever language you're most comfortable with.
+> **Tip:** Since all three languages implement the same architecture, you can make the same modification in whichever language you are most comfortable with.
 
 ---
 
@@ -360,4 +371,4 @@ The key insight: **Foundry Local replaces the cloud backend, not the application
 
 ## Next Step
 
-Continue to [Part 8: Voice Transcription with Whisper](part8-whisper-voice-transcription.md) to explore speech-to-text on-device using the Foundry Local SDK.
+Continue to [Part 8: Evaluation-Led Development](part8-evaluation-led-development.md) to build a systematic evaluation framework for your agents, using golden datasets, rule-based checks, and LLM-as-judge scoring.

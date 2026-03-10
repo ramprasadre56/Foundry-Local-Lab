@@ -8,7 +8,7 @@
 
 A single agent can handle many tasks, but complex workflows benefit from **Specialisation**. Instead of one agent trying to research, write, and edit simultaneously, you break the work into focused roles:
 
-![Multi-Agent Workflow](../images/part5-multi-agent-flow.png)
+![Multi-Agent Workflow](../images/part6-multi-agent-flow.png)
 
 | Pattern | Description |
 |---------|-------------|
@@ -101,9 +101,9 @@ All agents share the same Foundry Local model:
 
 ```python
 # Python - FoundryLocalClient handles everything
-from agent_framework.microsoft import FoundryLocalClient
+from agent_framework_foundry_local import FoundryLocalClient
 
-client = FoundryLocalClient(model_id="phi-4-mini")
+client = FoundryLocalClient(model_id="phi-3.5-mini")
 ```
 
 ```javascript
@@ -116,12 +116,12 @@ const client = new OpenAI({
 
 ```csharp
 // C# - OpenAIClient pointed at Foundry Local
-var key = new ApiKeyCredential(manager.ApiKey);
+var key = new ApiKeyCredential("foundry-local");
 var client = new OpenAIClient(key, new OpenAIClientOptions
 {
-    Endpoint = manager.Endpoint
+    Endpoint = new Uri(manager.Urls[0] + "/v1")
 });
-var chatClient = client.GetChatClient(model?.ModelId);
+var chatClient = client.GetChatClient(model.Id);
 ```
 
 **2. specialised instructions**
@@ -131,7 +131,7 @@ Each agent has a distinct persona:
 | Agent | Instructions (summary) |
 |-------|----------------------|
 | Researcher | "Provide key facts, statistics, and background. Organise as bullet points." |
-| Writer | "Write an engaging blog post (3-4 paragraphs) from the research notes. Don't invent facts." |
+| Writer | "Write an engaging blog post (3-4 paragraphs) from the research notes. Do not invent facts." |
 | Editor | "Review for clarity, grammar, and factual consistency. Verdict: ACCEPT or REVISE." |
 
 **3. Data flows between agents**
@@ -173,7 +173,7 @@ Extend the pipeline by adding a new agent. Choose one:
 
 | Agent | Purpose | Instructions |
 |-------|---------|-------------|
-| **Fact-Checker** | Verify claims in the article | `"You verify factual claims. For each claim, state whether it's supported by the research notes. Return JSON with verified/unverified items."` |
+| **Fact-Checker** | Verify claims in the article | `"You verify factual claims. For each claim, state whether it is supported by the research notes. Return JSON with verified/unverified items."` |
 | **Headline Writer** | Create catchy titles | `"Generate 5 headline options for the article. Vary style: informative, clickbait, question, listicle, emotional."` |
 | **Social Media** | Create promotional posts | `"Create 3 social media posts promoting this article: one for Twitter (280 chars), one for LinkedIn (professional tone), one for Instagram (casual with emoji suggestions)."` |
 
@@ -268,19 +268,19 @@ Here are orchestration patterns that apply to any multi-agent system (explored i
 
 ### Sequential Pipeline
 
-![Sequential Pipeline](../images/part5-sequential-pipeline.png)
+![Sequential Pipeline](../images/part6-sequential-pipeline.png)
 
 Each agent processes the output of the previous one. Simple and predictable.
 
 ### Feedback Loop
 
-![Feedback Loop](../images/part5-feedback-loop.png)
+![Feedback Loop](../images/part6-feedback-loop.png)
 
 An evaluator agent can trigger re-execution of earlier stages. The Zava Writer uses this: the editor can send feedback back to the researcher and writer.
 
 ### Shared Context
 
-![Shared Context](../images/part5-shared-context.png)
+![Shared Context](../images/part6-shared-context.png)
 
 All agents share a single `foundry_config` so they use the same model and endpoint.
 

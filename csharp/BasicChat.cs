@@ -1,4 +1,5 @@
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -6,7 +7,7 @@ using System.ClientModel;
 namespace Examples;
 
 /// <summary>
-/// Part 2: Basic streaming chat completion with Foundry Local.
+/// Part 3: Basic streaming chat completion with Foundry Local.
 /// </summary>
 public static class BasicChat
 {
@@ -16,12 +17,21 @@ public static class BasicChat
 
         // Step 1: Start the Foundry Local service
         Console.WriteLine("Starting Foundry Local service...");
-        var manager = await FoundryLocalManager.StartServiceAsync();
+        await FoundryLocalManager.CreateAsync(
+            new Configuration
+            {
+                AppName = "FoundryLocalSamples",
+                Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+            }, NullLogger.Instance, default);
+        var manager = FoundryLocalManager.Instance;
+        await manager.StartWebServiceAsync(default);
 
-        // Step 2: Check if the model is already downloaded
-        var cachedModels = await manager.ListCachedModelsAsync();
-        var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-        var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+        // Step 2: Get the model from the catalog
+        var catalog = await manager.GetCatalogAsync(default);
+        var model = await catalog.GetModelAsync(alias, default);
+
+        // Step 3: Check if the model is already downloaded
+        var isCached = await model.IsCachedAsync(default);
 
         if (isCached)
         {
@@ -30,24 +40,24 @@ public static class BasicChat
         else
         {
             Console.WriteLine($"Downloading model: {alias} (this may take several minutes)...");
-            await manager.DownloadModelAsync(aliasOrModelId: alias);
+            await model.DownloadAsync(null, default);
             Console.WriteLine($"Download complete: {alias}");
         }
 
-        // Step 3: Load the model into memory
+        // Step 4: Load the model into memory
         Console.WriteLine($"Loading model: {alias}...");
-        var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-        Console.WriteLine($"Loaded model: {model?.ModelId}");
-        Console.WriteLine($"Endpoint: {manager.Endpoint}\n");
+        await model.LoadAsync(default);
+        Console.WriteLine($"Loaded model: {model.Id}");
+        Console.WriteLine($"Endpoint: {manager.Urls[0]}\n");
 
         // Create an OpenAI client pointing to the local service
-        var key = new ApiKeyCredential(manager.ApiKey);
+        var key = new ApiKeyCredential("foundry-local");
         var client = new OpenAIClient(key, new OpenAIClientOptions
         {
-            Endpoint = manager.Endpoint
+            Endpoint = new Uri(manager.Urls[0] + "/v1")
         });
 
-        var chatClient = client.GetChatClient(model?.ModelId);
+        var chatClient = client.GetChatClient(model.Id);
 
         // Stream a response
         var completionUpdates = chatClient.CompleteChatStreaming("What is the golden ratio?");

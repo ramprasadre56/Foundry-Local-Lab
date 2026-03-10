@@ -23,8 +23,9 @@ By the end of this workshop you will be able to:
 | 5 | Create AI agents with persistent instructions and personas |
 | 6 | Orchestrate multi-agent workflows with feedback loops |
 | 7 | Explore a production capstone app - the Zava Creative Writer |
-| 8 | Transcribe audio with Whisper - speech-to-text on-device using the Foundry Local SDK |
-| 9 | Compile and run custom or Hugging Face models with ONNX Runtime GenAI and Foundry Local |
+| 8 | Build evaluation frameworks with golden datasets and LLM-as-judge scoring |
+| 9 | Transcribe audio with Whisper - speech-to-text on-device using the Foundry Local SDK |
+| 10 | Compile and run custom or Hugging Face models with ONNX Runtime GenAI and Foundry Local |
 
 ---
 
@@ -183,22 +184,50 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
-### Part 8: Voice Transcription with Whisper
+### Part 8: Evaluation-Led Development
 
-**Lab guide:** [`labs/part8-whisper-voice-transcription.md`](labs/part8-whisper-voice-transcription.md)
+**Lab guide:** [`labs/part8-evaluation-led-development.md`](labs/part8-evaluation-led-development.md)
+
+- Build a systematic evaluation framework for AI agents using golden datasets
+- Rule-based checks (length, keyword coverage, forbidden terms) + LLM-as-judge scoring
+- Side-by-side comparison of prompt variants with aggregate scorecards
+- Extends the Zava Editor agent pattern from Part 7 into an offline test suite
+- Python, JavaScript, and C# tracks
+
+**Code samples:**
+
+| Language | File | Description |
+|----------|------|-------------|
+| Python | `python/foundry-local-eval.py` | Evaluation framework |
+| C# | `csharp/AgentEvaluation.cs` | Evaluation framework |
+| JavaScript | `javascript/foundry-local-eval.mjs` | Evaluation framework |
+
+---
+
+### Part 9: Voice Transcription with Whisper
+
+**Lab guide:** [`labs/part9-whisper-voice-transcription.md`](labs/part9-whisper-voice-transcription.md)
 
 - Speech-to-text transcription using OpenAI Whisper running locally
 - Privacy-first audio processing - audio never leaves your device
 - Python, JavaScript, and C# tracks with `client.audio.transcriptions.create()` (Python/JS) and `AudioClient.TranscribeAudioAsync()` (C#)
 - Includes Zava-themed sample audio files for hands-on practice
 
+**Code samples:**
+
+| Language | File | Description |
+|----------|------|-------------|
+| Python | `python/foundry-local-whisper.py` | Whisper voice transcription |
+| C# | `csharp/WhisperTranscription.cs` | Whisper voice transcription |
+| JavaScript | `javascript/foundry-local-whisper.mjs` | Whisper voice transcription |
+
 > **Note:** This lab uses the **Foundry Local SDK** to programmatically download and load the Whisper model, then sends audio to the local OpenAI-compatible endpoint for transcription. The Whisper model (`whisper`) is listed in the Foundry Local catalog and runs entirely on-device - no cloud API keys or network access required.
 
 ---
 
-### Part 9: Using Custom or Hugging Face Models
+### Part 10: Using Custom or Hugging Face Models
 
-**Lab guide:** [`labs/part9-custom-models.md`](labs/part9-custom-models.md)
+**Lab guide:** [`labs/part10-custom-models.md`](labs/part10-custom-models.md)
 
 - Compiling Hugging Face models to optimised ONNX format using the ONNX Runtime GenAI model builder
 - Hardware-specific compilation (CPU, NVIDIA GPU, DirectML, WebGPU) and quantisation (int4, fp16, bf16)
@@ -217,19 +246,25 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── foundry-local-with-agf.py  # Single agent (AGF)
 │   ├── foundry-local-rag.py       # RAG pipeline
 │   ├── foundry-local-multi-agent.py # Multi-agent workflow
+│   ├── foundry-local-eval.py      # Agent evaluation framework
+│   ├── foundry-local-whisper.py   # Whisper voice transcription
 │   └── requirements.txt
 ├── csharp/                        # C# examples
-│   ├── Program.cs                 # CLI router (chat|rag|agent|multi)
+│   ├── Program.cs                 # CLI router (chat|rag|agent|multi|eval|whisper)
 │   ├── BasicChat.cs               # Basic chat
 │   ├── RagPipeline.cs             # RAG pipeline
 │   ├── SingleAgent.cs             # Single agent (ChatAgent pattern)
 │   ├── MultiAgent.cs              # Multi-agent workflow
+│   ├── AgentEvaluation.cs         # Agent evaluation framework
+│   ├── WhisperTranscription.cs    # Whisper voice transcription
 │   └── csharp.csproj
 ├── javascript/                    # JavaScript examples
 │   ├── foundry-local.mjs          # Basic chat
 │   ├── foundry-local-with-agent.mjs # Single agent
 │   ├── foundry-local-rag.mjs     # RAG pipeline
 │   ├── foundry-local-multi-agent.mjs # Multi-agent workflow
+│   ├── foundry-local-eval.mjs     # Agent evaluation framework
+│   ├── foundry-local-whisper.mjs  # Whisper voice transcription
 │   └── package.json
 ├── zava-creative-writer-local/ # Production multi-agent app
 │   └── src/
@@ -254,10 +289,11 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── part5-single-agents.md
 │   ├── part6-multi-agent-workflows.md
 │   ├── part7-zava-creative-writer.md
-│   ├── part8-whisper-voice-transcription.md
-│   └── part9-custom-models.md
+│   ├── part8-evaluation-led-development.md
+│   ├── part9-whisper-voice-transcription.md
+│   └── part10-custom-models.md
 ├── samples/
-│   └── audio/                     # Zava-themed WAV files for Part 8
+│   └── audio/                     # Zava-themed WAV files for Part 9
 │       ├── generate_samples.py    # TTS script (pyttsx3) to create WAVs
 │       └── README.md              # Sample descriptions
 ├── AGENTS.md                      # Coding agent instructions

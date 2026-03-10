@@ -12,7 +12,7 @@ An AI agent wraps a language model with **system instructions** that define its 
 - **Memory** - conversation history across turns
 - **Specialisation** - focused behaviour driven by well-crafted instructions
 
-![ChatAgent Pattern](../images/part4-agent-pattern.png)
+![ChatAgent Pattern](../images/part5-agent-pattern.png)
 
 ---
 
@@ -74,7 +74,7 @@ python foundry-local-with-agf.py
 
 ```python
 import asyncio
-from agent_framework.microsoft import FoundryLocalClient
+from agent_framework_foundry_local import FoundryLocalClient
 
 async def main():
     alias = "phi-4-mini"
@@ -214,33 +214,42 @@ dotnet run agent
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Agents.AI;
 using OpenAI;
 using System.ClientModel;
 
 // 1. Start Foundry Local and load a model
-var alias = "phi-4-mini";
-var manager = await FoundryLocalManager.StartServiceAsync();
+var alias = "phi-3.5-mini";
+await FoundryLocalManager.CreateAsync(
+    new Configuration
+    {
+        AppName = "FoundryLocalSamples",
+        Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+    }, NullLogger.Instance, default);
+var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var cachedModels = await manager.ListCachedModelsAsync();
-var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+var catalog = await manager.GetCatalogAsync(default);
+var model = await catalog.GetModelAsync(alias, default);
+
+var isCached = await model.IsCachedAsync(default);
 if (!isCached)
 {
     Console.WriteLine($"Downloading model: {alias}...");
-    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    await model.DownloadAsync(null, default);
 }
-var model = await manager.LoadModelAsync(aliasOrModelId: alias);
+await model.LoadAsync(default);
 
-var key = new ApiKeyCredential(manager.ApiKey);
+var key = new ApiKeyCredential("foundry-local");
 var client = new OpenAIClient(key, new OpenAIClientOptions
 {
-    Endpoint = manager.Endpoint
+    Endpoint = new Uri(manager.Urls[0] + "/v1")
 });
 
 // 2. Create an AIAgent using the Agent Framework extension method
 AIAgent joker = client
-    .GetChatClient(model?.ModelId)
+    .GetChatClient(model.Id)
     .AsAIAgent(
         instructions: "You are good at telling jokes. Keep your jokes short and family-friendly.",
         name: "Joker"
@@ -280,7 +289,7 @@ Modify the agent's `instructions` to create a different persona. Try each one an
 **Try it:**
 1. Pick a persona from the table above
 2. Replace the `instructions` string in the code
-3. Adjust the user prompt to match (e.g., ask the code reviewer to review a function)
+3. Adjust the user prompt to match (e.g. ask the code reviewer to review a function)
 4. Run the example again and compare the output
 
 > **Tip:** The quality of an agent depends heavily on the instructions. Specific, well-structured instructions produce better results than vague ones.
@@ -296,7 +305,7 @@ Extend the example to support a multi-turn chat loop so you can have a back-and-
 
 ```python
 import asyncio
-from agent_framework.microsoft import FoundryLocalClient
+from agent_framework_foundry_local import FoundryLocalClient
 
 async def main():
     client = FoundryLocalClient(model_id="phi-4-mini")
@@ -379,31 +388,40 @@ main();
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Agents.AI;
 using OpenAI;
 using System.ClientModel;
 
-var alias = "phi-4-mini";
-var manager = await FoundryLocalManager.StartServiceAsync();
+var alias = "phi-3.5-mini";
+var config = new Configuration
+{
+    AppName = "FoundryLocalSamples",
+    Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+};
+await FoundryLocalManager.CreateAsync(config, NullLogger.Instance, default);
+var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var cachedModels = await manager.ListCachedModelsAsync();
-var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+var catalog = await manager.GetCatalogAsync(default);
+var model = await catalog.GetModelAsync(alias, default);
+
+var isCached = await model.IsCachedAsync(default);
 if (!isCached)
 {
     Console.WriteLine($"Downloading model: {alias}...");
-    await manager.DownloadModelAsync(aliasOrModelId: alias);
+    await model.DownloadAsync(null, default);
 }
-var model = await manager.LoadModelAsync(aliasOrModelId: alias);
+await model.LoadAsync(default);
 
-var key = new ApiKeyCredential(manager.ApiKey);
+var key = new ApiKeyCredential("foundry-local");
 var client = new OpenAIClient(key, new OpenAIClientOptions
 {
-    Endpoint = manager.Endpoint
+    Endpoint = new Uri(manager.Urls[0] + "/v1")
 });
 
 AIAgent agent = client
-    .GetChatClient(model?.ModelId)
+    .GetChatClient(model.Id)
     .AsAIAgent(
         instructions: "You are a helpful assistant.",
         name: "Assistant"
@@ -432,7 +450,7 @@ Notice how the agent remembers previous turns - ask a follow-up question and see
 
 ### Exercise 5 - Structured Output
 
-Instruct the agent to always respond in a specific format (e.g., JSON) and parse the result:
+Instruct the agent to always respond in a specific format (e.g. JSON) and parse the result:
 
 <details>
 <summary><strong>🐍 Python - JSON output</strong></summary>
@@ -440,7 +458,7 @@ Instruct the agent to always respond in a specific format (e.g., JSON) and parse
 ```python
 import asyncio
 import json
-from agent_framework.microsoft import FoundryLocalClient
+from agent_framework_foundry_local import FoundryLocalClient
 
 async def main():
     client = FoundryLocalClient(model_id="phi-4-mini")
@@ -517,4 +535,4 @@ catch (JsonException)
 
 ## Next Steps
 
-In **[Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)**, you'll combine multiple agents into a coordinated pipeline where each agent has a specialised role.
+In **[Part 6: Multi-Agent Workflows](part6-multi-agent-workflows.md)**, you will combine multiple agents into a coordinated pipeline where each agent has a specialised role.

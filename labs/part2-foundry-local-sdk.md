@@ -8,7 +8,7 @@
 
 In Part 1 you used the **Foundry Local CLI** to download and run models interactively. The CLI is great for exploration, but when you build real applications you need **programmatic control**. The Foundry Local SDK gives you that - it manages the **control plane** (starting the service, discovering models, downloading, loading) so your application code can focus on the **data plane** (sending prompts, receiving completions).
 
-This lab teaches you the full SDK API surface across Python, JavaScript, and C#. By the end you'll understand every method available and when to use each one.
+This lab teaches you the full SDK API surface across Python, JavaScript, and C#. By the end you will understand every method available and when to use each one.
 
 ## Learning Objectives
 
@@ -46,7 +46,7 @@ By the end of this lab you will be able to:
 | **Automation** | Shell scripts | Native language integration |
 | **Deployment** | Requires CLI on end-user machine | C# SDK can be self-contained (no CLI needed) |
 
-> **Key insight:** The SDK handles the entire lifecycle - starting the service, checking the cache, downloading missing models, loading them, and discovering the endpoint - in a few lines of code. Your application doesn't need to parse CLI output or manage subprocesses.
+> **Key insight:** The SDK handles the entire lifecycle: starting the service, checking the cache, downloading missing models, loading them, and discovering the endpoint, in a few lines of code. Your application does not need to parse CLI output or manage subprocesses.
 
 ---
 
@@ -246,28 +246,23 @@ The C# SDK v0.8.0+ uses an object-oriented architecture with `Configuration`, `C
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 // Step 1: Configure
 var config = new Configuration
 {
     AppName = "SDKDemo",
-    LogLevel = Microsoft.AI.Foundry.Local.LogLevel.Information,
+    Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
 };
 
-using var loggerFactory = LoggerFactory.Create(builder =>
-{
-    builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
-});
-var logger = loggerFactory.CreateLogger<Program>();
-
 // Step 2: Create the manager
-await FoundryLocalManager.CreateAsync(config, logger);
+await FoundryLocalManager.CreateAsync(config, NullLogger.Instance, default);
 var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
 // Step 3: Browse the catalog
-var catalog = await manager.GetCatalogAsync();
-var models = await catalog.ListModelsAsync();
+var catalog = await manager.GetCatalogAsync(default);
+var models = await catalog.ListModelsAsync(default);
 
 Console.WriteLine($"Models available in catalog: {models.Count()}");
 
@@ -298,7 +293,7 @@ foreach (var model in models)
 | `catalog.GetCachedModelsAsync()` | List downloaded models |
 | `catalog.GetLoadedModelsAsync()` | List currently loaded models |
 
-> **C# Architecture Note:** The C# SDK v0.8.0+ redesign makes the application **self-contained** - it doesn't require the Foundry Local CLI on the end-user's machine. The SDK handles model management and inference natively.
+> **C# Architecture Note:** The C# SDK v0.8.0+ redesign makes the application **self-contained**; it does not require the Foundry Local CLI on the end-user's machine. The SDK handles model management and inference natively.
 
 </details>
 
@@ -417,30 +412,23 @@ console.log(`Ready! Model: ${model.id}, Endpoint: ${manager2.endpoint}`);
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 var alias = "phi-3.5-mini";
 
 var config = new Configuration
 {
     AppName = "SDKDemo",
-    LogLevel = Microsoft.AI.Foundry.Local.LogLevel.Information,
+    Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
 };
 
-using var loggerFactory = LoggerFactory.Create(builder =>
-{
-    builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
-});
-var logger = loggerFactory.CreateLogger<Program>();
-
-await FoundryLocalManager.CreateAsync(config, logger);
+await FoundryLocalManager.CreateAsync(config, NullLogger.Instance, default);
 var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
 // Get model from catalog
-var catalog = await manager.GetCatalogAsync()
-    ?? throw new Exception("Failed to get catalog");
-var model = await catalog.GetModelAsync(alias: alias)
-    ?? throw new Exception($"Model '{alias}' not found");
+var catalog = await manager.GetCatalogAsync(default);
+var model = await catalog.GetModelAsync(alias, default);
 
 // View available variants
 Console.WriteLine($"Model: {model.Alias}");
@@ -450,18 +438,18 @@ foreach (var variant in model.Variants)
     Console.WriteLine($"    Device: {variant.Info.Runtime?.DeviceType}");
 }
 
-// Download (shows progress)
-Console.WriteLine("Downloading...");
-await model.DownloadAsync(progress =>
+// Download if needed
+var isCached = await model.IsCachedAsync(default);
+if (!isCached)
 {
-    if (progress % 10 == 0) Console.Write(".");
-});
-Console.WriteLine();
+    Console.WriteLine("Downloading...");
+    await model.DownloadAsync(null, default);
+}
 
 // Load into memory
 Console.WriteLine("Loading...");
-await model.LoadAsync();
-Console.WriteLine($"Model loaded: {model.SelectedVariant?.Info.ModelId}");
+await model.LoadAsync(default);
+Console.WriteLine($"Model loaded: {model.Id}");
 ```
 
 #### C# - Model Methods
@@ -542,7 +530,7 @@ if (info) {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `alias` | string | Short name (e.g., `phi-3.5-mini`) |
+| `alias` | string | Short name (e.g. `phi-3.5-mini`) |
 | `id` | string | Unique model identifier |
 | `version` | string | Model version |
 | `task` | string | `chat-completions` or `automatic-speech-recognition` |
@@ -572,11 +560,11 @@ alias = "qwen2.5-0.5b"  # Small model for quick testing
 manager = FoundryLocalManager()
 manager.start_service()
 
-# 1. Check what's in the catalog
+# 1. Check what is in the catalog
 catalog = manager.list_catalog_models()
 print(f"Catalog: {len(catalog)} models")
 
-# 2. Check what's already downloaded
+# 2. Check what is already downloaded
 cached = manager.list_cached_models()
 print(f"Cached: {len(cached)} models")
 for m in cached:
@@ -587,7 +575,7 @@ print(f"\nDownloading {alias}...")
 manager.download_model(alias)
 print("Download complete")
 
-# 4. Verify it's in the cache now
+# 4. Verify it is in the cache now
 cached = manager.list_cached_models()
 print(f"Cached after download: {len(cached)} models")
 
@@ -596,7 +584,7 @@ print(f"\nLoading {alias}...")
 loaded_info = manager.load_model(alias)
 print(f"Loaded: {loaded_info.id}")
 
-# 6. Check what's loaded
+# 6. Check what is loaded
 loaded = manager.list_loaded_models()
 print(f"\nLoaded models: {len(loaded)}")
 for m in loaded:
@@ -724,31 +712,27 @@ await manager.init(); // Starts service only, no model loaded
 
 ```csharp
 using Microsoft.AI.Foundry.Local;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 var config = new Configuration
 {
     AppName = "QuickStart",
-    LogLevel = Microsoft.AI.Foundry.Local.LogLevel.Information,
+    Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
 };
 
-using var loggerFactory = LoggerFactory.Create(builder =>
-{
-    builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
-});
-
-await FoundryLocalManager.CreateAsync(config, loggerFactory.CreateLogger<Program>());
+await FoundryLocalManager.CreateAsync(config, NullLogger.Instance, default);
 var manager = FoundryLocalManager.Instance;
+await manager.StartWebServiceAsync(default);
 
-var catalog = await manager.GetCatalogAsync()
-    ?? throw new Exception("Catalog unavailable");
-var model = await catalog.GetModelAsync(alias: "phi-3.5-mini")
-    ?? throw new Exception("Model not found");
+var catalog = await manager.GetCatalogAsync(default);
+var model = await catalog.GetModelAsync("phi-3.5-mini", default);
 
-await model.DownloadAsync();
-await model.LoadAsync();
+var isCached = await model.IsCachedAsync(default);
+if (!isCached)
+    await model.DownloadAsync(null, default);
+await model.LoadAsync(default);
 
-Console.WriteLine($"Model loaded: {model.SelectedVariant?.Info.ModelId}");
+Console.WriteLine($"Model loaded: {model.Id}");
 ```
 
 > **C# Note:** The C# SDK uses `Configuration` to control app name, logging, cache directories, and even pin a specific web server port. This makes it the most configurable of the three SDKs.

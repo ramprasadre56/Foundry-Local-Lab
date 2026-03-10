@@ -1,6 +1,6 @@
 ![Foundry Local](https://www.foundrylocal.ai/logos/foundry-local-logo-color.svg)
 
-# Part 9: Using Custom or Hugging Face Models with Foundry Local
+# Part 10: Using Custom or Hugging Face Models with Foundry Local
 
 > **Goal:** Compile a Hugging Face model into the optimised ONNX format that Foundry Local requires, configure it with a chat template, add it to the local cache, and run inference against it using the CLI, REST API, and OpenAI SDK.
 
@@ -799,8 +799,9 @@ Congratulations — you have completed the full Foundry Local Workshop! You have
 | 5 | Created AI agents with personas and structured output |
 | 6 | Orchestrated multi-agent pipelines with feedback loops |
 | 7 | Explored a production capstone app — the Zava Creative Writer |
-| 8 | Transcribed audio with Whisper — speech-to-text on-device |
-| 9 | Compiled and ran a custom Hugging Face model with ONNX Runtime GenAI |
+| 8 | Built evaluation-led development workflows for agents |
+| 9 | Transcribed audio with Whisper — speech-to-text on-device |
+| 10 | Compiled and ran a custom Hugging Face model with ONNX Runtime GenAI |
 
 Go back to the [workshop overview](../README.md) to review what you have covered and explore the further reading resources.
 

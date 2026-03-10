@@ -1,4 +1,5 @@
 using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Agents.AI;
 using OpenAI;
 using OpenAI.Chat;
@@ -7,7 +8,7 @@ using System.ClientModel;
 namespace Examples;
 
 /// <summary>
-/// Part 5: Multi-agent workflow — Researcher → Writer → Editor pipeline.
+/// Part 6: Multi-agent workflow — Researcher → Writer → Editor pipeline.
 /// Three AIAgent instances collaborate sequentially to produce a reviewed blog post.
 /// Uses the Microsoft Agent Framework's AsAIAgent() extension method.
 /// </summary>
@@ -15,16 +16,25 @@ public static class MultiAgent
 {
     public static async Task RunAsync()
     {
-        var alias = "phi-4-mini";
+        var alias = "phi-3.5-mini";
 
         // Step 1: Start the Foundry Local service
         Console.WriteLine("Starting Foundry Local service...");
-        var manager = await FoundryLocalManager.StartServiceAsync();
+        await FoundryLocalManager.CreateAsync(
+            new Configuration
+            {
+                AppName = "FoundryLocalSamples",
+                Web = new Configuration.WebService { Urls = "http://127.0.0.1:0" }
+            }, NullLogger.Instance, default);
+        var manager = FoundryLocalManager.Instance;
+        await manager.StartWebServiceAsync(default);
 
-        // Step 2: Check if the model is already downloaded
-        var cachedModels = await manager.ListCachedModelsAsync();
-        var catalogInfo = await manager.GetModelInfoAsync(aliasOrModelId: alias);
-        var isCached = cachedModels.Any(m => m.ModelId == catalogInfo?.ModelId);
+        // Step 2: Get the model from the catalog
+        var catalog = await manager.GetCatalogAsync(default);
+        var model = await catalog.GetModelAsync(alias, default);
+
+        // Step 3: Check if the model is already downloaded
+        var isCached = await model.IsCachedAsync(default);
 
         if (isCached)
         {
@@ -33,22 +43,22 @@ public static class MultiAgent
         else
         {
             Console.WriteLine($"Downloading model: {alias} (this may take several minutes)...");
-            await manager.DownloadModelAsync(aliasOrModelId: alias);
+            await model.DownloadAsync(null, default);
             Console.WriteLine($"Download complete: {alias}");
         }
 
-        // Step 3: Load the model into memory
+        // Step 4: Load the model into memory
         Console.WriteLine($"Loading model: {alias}...");
-        var model = await manager.LoadModelAsync(aliasOrModelId: alias);
-        Console.WriteLine($"Model: {model?.ModelId}");
-        Console.WriteLine($"Endpoint: {manager.Endpoint}\n");
+        await model.LoadAsync(default);
+        Console.WriteLine($"Model: {model.Id}");
+        Console.WriteLine($"Endpoint: {manager.Urls[0]}\n");
 
-        var key = new ApiKeyCredential(manager.ApiKey);
+        var key = new ApiKeyCredential("foundry-local");
         var openAiClient = new OpenAIClient(key, new OpenAIClientOptions
         {
-            Endpoint = manager.Endpoint
+            Endpoint = new Uri(manager.Urls[0] + "/v1")
         });
-        var chatClient = openAiClient.GetChatClient(model?.ModelId);
+        var chatClient = openAiClient.GetChatClient(model.Id);
 
         // ── Define agents using AsAIAgent() ─────────────────────────────
         AIAgent researcher = chatClient.AsAIAgent(
@@ -86,13 +96,13 @@ public static class MultiAgent
         // Step 1 — Research
         Console.WriteLine("\n[Researcher] Gathering information...");
         var researchNotes = await researcher.RunAsync(
-            $"Research the following topic and provide key facts:\n{topic}");
+            $"Research the following topic and provide 5 key facts as bullet points:\n{topic}");
         Console.WriteLine($"\n--- Research Notes ---\n{researchNotes}\n");
 
         // Step 2 — Write
         Console.WriteLine("[Writer] Drafting the article...");
         var draft = await writer.RunAsync(
-            $"Write a blog post based on these research notes:\n\n{researchNotes}");
+            $"Write a short blog post (2-3 paragraphs) based on these research notes:\n\n{researchNotes}");
         Console.WriteLine($"\n--- Draft Article ---\n{draft}\n");
 
         // Step 3 — Edit

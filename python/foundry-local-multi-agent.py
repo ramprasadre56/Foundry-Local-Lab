@@ -13,7 +13,7 @@ collaborate sequentially: Researcher → Writer → Editor.
 
 import asyncio
 
-from agent_framework.microsoft import FoundryLocalClient
+from agent_framework_foundry_local import FoundryLocalClient
 
 
 async def main():
