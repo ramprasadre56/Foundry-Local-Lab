@@ -503,44 +503,16 @@ response = client.chat.completions.create(
 ## Key Takeaways
 
 1. **Tool calling** lets models request function execution rather than guessing answers
-2. The model **never executes code** — your application decides what to run
+2. The model **never executes code**; your application decides what to run
 3. Tools are defined as **JSON Schema** objects following the OpenAI function-calling format
-4. The conversation uses a **multi-turn pattern**: user → assistant (tool_calls) → tool (results) → assistant (final answer)
+4. The conversation uses a **multi-turn pattern**: user, then assistant (tool_calls), then tool (results), then assistant (final answer)
 5. Always use a **model that supports tool calling** (Qwen 2.5, Phi-4-mini)
 6. The SDK's `createChatClient()` provides a convenient way to make tool-calling requests without constructing an OpenAI client
 
 ---
 
-## Workshop Complete!
-
-Congratulations — you have completed the full Foundry Local Workshop! You have gone from installing the CLI to building chat apps, RAG pipelines, multi-agent systems, speech-to-text transcription, compiling your own custom models, and enabling tool calling — all running entirely on your device.
-
-| Part | What You Built |
-|------|---------------|
-| 1 | Installed Foundry Local, explored models via CLI |
-| 2 | Mastered the Foundry Local SDK API — service, catalogue, cache, model management |
-| 3 | Connected from Python/JS/C# using the SDK with OpenAI |
-| 4 | Built a RAG pipeline with local knowledge retrieval |
-| 5 | Created AI agents with personas and structured output |
-| 6 | Orchestrated multi-agent pipelines with feedback loops |
-| 7 | Explored a production capstone app — the Zava Creative Writer |
-| 8 | Built evaluation-led development workflows for agents |
-| 9 | Transcribed audio with Whisper — speech-to-text on-device |
-| 10 | Compiled and ran a custom Hugging Face model with ONNX Runtime GenAI |
-| 11 | Enabled local models to call external functions with tool calling |
-
-Go back to the [workshop overview](../README.md) to review what you have covered and explore the further reading resources.
+Continue to [Part 12: Building a Web UI for the Zava Creative Writer](part12-zava-ui.md) to add a browser-based front end to the multi-agent pipeline with real-time streaming.
 
 ---
 
-**Further ideas:**
-- Combine tool calling with agents to build autonomous workflows
-- Query a local database or call internal REST APIs from your tools
-- Try different models (`phi-4-mini`, `deepseek-r1-7b`) to compare quality and speed
-- Build a frontend UI for the Zava Writer API (Python version)
-- Create your own multi-agent application for a domain you care about
-- Deploy to the cloud by swapping Foundry Local for Azure AI Foundry — same code, different endpoint
-
----
-
-[← Part 10: Custom Models](part10-custom-models.md) | [Back to Workshop Home](../README.md)
+[← Part 10: Custom Models](part10-custom-models.md) | [Part 12: Zava Writer UI →](part12-zava-ui.md)

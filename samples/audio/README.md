@@ -19,6 +19,7 @@ python samples/audio/generate_samples.py
 | `zava-support-call.wav` | Support call about the **Zava TitanLock Tool Chest** - replacement keys, extra drawer liners | ~20 sec |
 | `zava-project-planning.wav` | DIYer planning a backyard deck with **Zava EcoBoard Composite Decking** & BrightBeam lights | ~25 sec |
 | `zava-workshop-setup.wav` | Walkthrough of a complete workshop using **all five Zava products** | ~32 sec |
+| `zava-full-project-walkthrough.wav` | Extended garage renovation walkthrough using **all Zava products** (for long-audio testing, see [Foundry-Local#517](https://github.com/microsoft/Foundry-Local/issues/517)) | ~4 min |
 
 ## Notes
 

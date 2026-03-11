@@ -40,7 +40,23 @@ else
 }
 
 Console.WriteLine($"Loading model: {alias}...");
-await catalogModel.LoadAsync(default);
+try
+{
+    await catalogModel.LoadAsync(default);
+}
+catch (FoundryLocalException) when (catalogModel.Variants.Count > 1)
+{
+    var cpuVariant = catalogModel.Variants.FirstOrDefault(v => v.Id.Contains("generic-cpu"));
+    if (cpuVariant != null)
+    {
+        Console.WriteLine($"NPU variant not supported, switching to CPU variant...");
+        catalogModel.SelectVariant(cpuVariant);
+        if (!await catalogModel.IsCachedAsync(default))
+            await catalogModel.DownloadAsync(null, default);
+        await catalogModel.LoadAsync(default);
+    }
+    else throw;
+}
 var modelId = catalogModel.Id;
 Console.WriteLine($"Model ready: {modelId}");
 

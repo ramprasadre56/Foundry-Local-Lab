@@ -54,29 +54,7 @@ Some nodes were not assigned to the preferred execution providers which may or m
 
 ---
 
-## 3. HTTP 500 Internal Server Error During Sustained LLM Inference
-
-**Status:** Open
-**Severity:** Critical
-**Component:** Foundry Local inference server
-**Reproduction:** Run the evaluation framework (`dotnet run eval`) — crashes partway through the second prompt variant after ~8-10 sequential completions
-
-```
-System.ClientModel.ClientResultException: Service request failed.
-Status: 500 (Internal Server Error)
-   at OpenAI.ClientPipelineExtensions.ProcessMessageAsync(...)
-   at Examples.AgentEvaluation.LlmJudge(...) in AgentEvaluation.cs:line 128
-```
-
-**Context:** The evaluation pipeline runs 5 test cases × 2 prompt variants, each requiring two LLM calls (one for the agent response, one for the LLM-as-judge). The crash occurs after approximately 13-15 successful completions, suggesting a resource exhaustion or model context issue under sustained load.
-
-**Workaround:** Added `try/catch` around the LLM judge call with a fallback score of 3. On the second attempt (after `foundry service stop` and restart), the full evaluation completed successfully.
-
-**Expected:** The local inference server should handle sequential completion requests reliably without returning 500 errors. If resources are exhausted, a more informative error (e.g., 503 with retry hint) would be preferable.
-
----
-
-## 4. SingleAgent NullReferenceException on First Run
+## 3. SingleAgent NullReferenceException on First Run
 
 **Status:** Open (intermittent)
 **Severity:** Critical (crash)
@@ -96,7 +74,7 @@ System.NullReferenceException: Object reference not set to an instance of an obj
 
 ---
 
-## 5. C# SDK Requires Explicit RuntimeIdentifier
+## 4. C# SDK Requires Explicit RuntimeIdentifier
 
 **Status:** Open — tracked in [microsoft/Foundry-Local#497](https://github.com/microsoft/Foundry-Local/issues/497)
 **Severity:** Documentation gap
@@ -136,28 +114,28 @@ However, users must remember the `-r` flag every time, which is easy to forget.
 
 ---
 
-## 6. JavaScript Whisper — Last Audio File Returns Empty Transcription
+## 5. JavaScript Whisper — Audio Transcription Returns Empty/Binary Output
 
-**Status:** Open
-**Severity:** Minor
-**Component:** JavaScript Whisper implementation (`foundry-local-whisper.mjs`)
-**Reproduction:** Run `node foundry-local-whisper.mjs` — the 5th audio file (`zava-workshop-setup.wav`) returns an empty transcription
+**Status:** Open (regression — worsened since initial report)
+**Severity:** Major
+**Component:** JavaScript Whisper implementation (`foundry-local-whisper.mjs`) / `model.createAudioClient()`
+**Reproduction:** Run `node foundry-local-whisper.mjs` — all audio files return empty or binary output instead of text transcription
 
 ```
 ============================================================
-File: zava-workshop-setup.wav
+File: zava-product-description.wav
 ============================================================
-
-(10.6s)
+�
+(1.2s)
 ```
 
-All other 4 files transcribed correctly. The same file transcribed successfully via the C# implementation, suggesting a JavaScript SDK or ONNX Runtime Node.js binding issue with certain audio file lengths or characteristics.
+Originally only the 5th audio file returned empty; as of v0.9.x, all 5 files return a single byte (`\ufffd`) instead of transcribed text. The Python Whisper implementation using the OpenAI SDK transcribes the same files correctly.
 
-**Expected:** All audio files should transcribe consistently across SDK implementations.
+**Expected:** `createAudioClient()` should return text transcription matching the Python/C# implementations.
 
 ---
 
-## 7. C# SDK Only Ships net8.0 — No Official .NET 9 or .NET 10 Target
+## 6. C# SDK Only Ships net8.0 — No Official .NET 9 or .NET 10 Target
 
 **Status:** Open
 **Severity:** Documentation gap
@@ -194,7 +172,7 @@ The net8.0 assembly loads on newer runtimes through .NET's forward-compatibility
 
 ---
 
-## 8. JavaScript ChatClient Streaming Uses Callbacks, Not Async Iterators
+## 7. JavaScript ChatClient Streaming Uses Callbacks, Not Async Iterators
 
 **Status:** Open
 **Severity:** Documentation gap
@@ -218,18 +196,52 @@ await chatClient.completeStreamingChat(messages, (chunk) => {
 
 ---
 
-## 9. Tool Calling — Model May Not Support All tool_choice Options
+## 8. C# SDK NPU Model Variant Fails to Load on ARM (QNN EP Not in NuGet Package)
 
-**Status:** Open
-**Severity:** Minor
-**Component:** Local inference server
-**Reproduction:** Use `tool_choice: "required"` or a specific function name with smaller models
+**Status:** Mitigated (code workaround applied)
+**Severity:** Critical (crash on ARM devices)
+**Component:** `Microsoft.AI.Foundry.Local` NuGet v0.9.0 + Foundry Local model catalog
+**Reproduction:** Run any C# sample using `phi-3.5-mini` on Snapdragon X Elite hardware
 
-Some tool calling models (particularly qwen2.5-0.5b) may not fully support all `tool_choice` values. The `"auto"` setting works reliably, but `"required"` and specific function targeting may be ignored or produce unpredictable results.
+On ARM devices with NPU support, the Foundry Local catalog resolves the `phi-3.5-mini` alias to the NPU/QNN model variant (`Phi-3.5-mini-instruct-qnn-npu:1`) first. However, the ONNX Runtime GenAI binaries bundled in the C# NuGet package do **not** include the QNN execution provider. This causes `LoadAsync()` to fail:
 
-**Workaround:** Use `tool_choice: "auto"` (the default) for the most reliable behaviour. Design tool descriptions to be clear enough that the model calls the right tool without forcing.
+```
+Microsoft.AI.Foundry.Local.FoundryLocalException:
+  QNN execution provider is not supported in this build
+```
 
-**Expected:** Document which `tool_choice` options are supported per model.
+The Foundry Local CLI's *service-hosted* inference works fine with QNN (it bundles its own ONNX Runtime with QNN EP), but the C# SDK's in-process `LoadAsync()` does not.
+
+**Impact:** All C# samples using `phi-3.5-mini` crash on ARM before reaching inference. Whisper and tool-calling samples are unaffected (they use `whisper-medium` and `qwen2.5-0.5b` respectively).
+
+**Workaround applied:** All 7 affected C# files now wrap `LoadAsync()` in a try/catch that detects the failure and uses `model.Variants` + `model.SelectVariant()` to switch to the CPU variant:
+
+```csharp
+try
+{
+    await model.LoadAsync(default);
+}
+catch (FoundryLocalException) when (model.Variants.Count > 1)
+{
+    var cpuVariant = model.Variants.FirstOrDefault(v => v.Id.Contains("generic-cpu"));
+    if (cpuVariant != null)
+    {
+        Console.WriteLine("NPU variant not supported, switching to CPU variant...");
+        model.SelectVariant(cpuVariant);
+        if (!await model.IsCachedAsync(default))
+            await model.DownloadAsync(null, default);
+        await model.LoadAsync(default);
+    }
+    else throw;
+}
+```
+
+**Files with workaround:**
+- `csharp/BasicChat.cs`, `AgentEvaluation.cs`, `MultiAgent.cs`, `RagPipeline.cs`, `SingleAgent.cs`
+- `zava-creative-writer-local/src/csharp/Program.cs`
+- `zava-creative-writer-local/src/csharp-web/Program.cs`
+
+**Expected:** The C# NuGet package should either (a) bundle the QNN EP for ARM targets, or (b) `GetModelAsync()` should automatically skip variants whose EP is not available.
 
 ---
 
@@ -243,7 +255,7 @@ Some tool calling models (particularly qwen2.5-0.5b) may not fully support all `
 | Foundry Local SDK (C#) | 0.9.0 |
 | Microsoft.Agents.AI.OpenAI | 1.0.0-rc3 |
 | OpenAI C# SDK | 2.9.0 |
-| .NET SDK | 10.0.103 |
+| .NET SDK | 9.0.312, 10.0.104 |
 | foundry-local-sdk (Python) | 0.5.x |
 | foundry-local-sdk (JS) | 0.9.x |
 | Node.js | 18+ |

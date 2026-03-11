@@ -94,33 +94,32 @@ INITIAL_TOKENS = [sot] + [tid for _, tid in forced_ids] + [notimestamps]
 
 print("Models loaded and ready.\n")
 
+# Whisper processes exactly 30 seconds of audio per encoder pass.
+# For longer files we split into 30-second chunks, transcribe each, and
+# concatenate the results.  See https://github.com/microsoft/Foundry-Local/issues/517
+CHUNK_SECONDS = 30
+SAMPLE_RATE = 16000
+CHUNK_SAMPLES = CHUNK_SECONDS * SAMPLE_RATE
 
-def transcribe(audio_path: str) -> str:
-    """Transcribe a single WAV file and return the text."""
-    # Load audio at 16 kHz mono
-    audio, _ = librosa.load(audio_path, sr=16000)
 
-    # Extract log-mel spectrogram features
-    features = feature_extractor(audio, sampling_rate=16000, return_tensors="np")
+def _transcribe_chunk(audio_chunk):
+    """Run encoder + decoder on a single ≤30-second audio chunk."""
+    features = feature_extractor(audio_chunk, sampling_rate=SAMPLE_RATE, return_tensors="np")
     audio_features = features["input_features"].astype(np.float32)
 
-    # Run the encoder
     encoder_outputs = encoder_session.run(None, {"audio_features": audio_features})
     cross_kv_list = encoder_outputs[1:]
 
-    # Prepare cross-attention KV cache from encoder
     cross_kv = {}
     for i in range(NUM_LAYERS):
         cross_kv[f"past_key_cross_{i}"] = cross_kv_list[i * 2]
         cross_kv[f"past_value_cross_{i}"] = cross_kv_list[i * 2 + 1]
 
-    # Initialise empty self-attention KV cache
     self_kv = {}
     for i in range(NUM_LAYERS):
         self_kv[f"past_key_self_{i}"] = np.zeros((1, NUM_HEADS, 0, HEAD_SIZE), dtype=np.float32)
         self_kv[f"past_value_self_{i}"] = np.zeros((1, NUM_HEADS, 0, HEAD_SIZE), dtype=np.float32)
 
-    # Autoregressive decoding
     input_ids = np.array([INITIAL_TOKENS], dtype=np.int32)
     generated = []
 
@@ -138,7 +137,6 @@ def transcribe(audio_path: str) -> str:
 
         generated.append(next_token)
 
-        # Update self-attention KV cache
         for i in range(NUM_LAYERS):
             self_kv[f"past_key_self_{i}"] = outputs[1 + i * 2]
             self_kv[f"past_value_self_{i}"] = outputs[2 + i * 2]
@@ -146,6 +144,33 @@ def transcribe(audio_path: str) -> str:
         input_ids = np.array([[next_token]], dtype=np.int32)
 
     return tokenizer.decode(generated, skip_special_tokens=True).strip()
+
+
+def transcribe(audio_path):
+    """Transcribe a WAV file of any length by chunking into 30-second segments."""
+    audio, _ = librosa.load(audio_path, sr=SAMPLE_RATE)
+    duration = len(audio) / SAMPLE_RATE
+
+    # Short audio (≤30 s) — single pass
+    if len(audio) <= CHUNK_SAMPLES:
+        return _transcribe_chunk(audio)
+
+    # Long audio — split into 30-second chunks
+    num_chunks = (len(audio) + CHUNK_SAMPLES - 1) // CHUNK_SAMPLES
+    print(f"  Audio is {duration:.1f}s — splitting into {num_chunks} chunks of {CHUNK_SECONDS}s")
+    parts = []
+    for idx in range(num_chunks):
+        start = idx * CHUNK_SAMPLES
+        end = min(start + CHUNK_SAMPLES, len(audio))
+        chunk = audio[start:end]
+        chunk_dur = len(chunk) / SAMPLE_RATE
+        print(f"  Chunk {idx + 1}/{num_chunks} ({chunk_dur:.1f}s)...", end=" ", flush=True)
+        text = _transcribe_chunk(chunk)
+        print("done")
+        if text:
+            parts.append(text)
+
+    return " ".join(parts)
 
 
 # ---------------------------------------------------------------------------

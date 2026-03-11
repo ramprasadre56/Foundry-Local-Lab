@@ -9,15 +9,17 @@ This is a **hands-on workshop** for building AI applications with [Foundry Local
 ## Repository Structure
 
 ```
-├── labs/                              # Markdown lab guides (Parts 1–11)
+├── labs/                              # Markdown lab guides (Parts 1–13)
 ├── python/                            # Python code samples (Parts 2–6, 8–9, 11)
 ├── javascript/                        # JavaScript/Node.js code samples (Parts 2–6, 8–9, 11)
 ├── csharp/                            # C# / .NET 9 code samples (Parts 2–6, 8–9, 11)
-├── zava-creative-writer-local/        # Part 7 capstone app (Python/JS/C#)
+├── zava-creative-writer-local/        # Part 7 capstone app + Part 12 UI (Python/JS/C#)
+│   ├── ui/                            # Shared browser UI (vanilla HTML/CSS/JS)
 │   └── src/
-│       ├── api/                       # Python FastAPI multi-agent service
-│       ├── javascript/                # Node.js CLI multi-agent app
-│       └── csharp/                    # .NET console multi-agent app
+│       ├── api/                       # Python FastAPI multi-agent service (serves UI)
+│       ├── javascript/                # Node.js CLI + HTTP server (server.mjs)
+│       ├── csharp/                    # .NET console multi-agent app
+│       └── csharp-web/                # .NET ASP.NET Core minimal API (serves UI)
 ├── samples/audio/                     # Part 9 sample WAV files + generator script
 ├── images/                            # Diagrams referenced by lab guides
 ├── README.md                          # Workshop overview and navigation
@@ -122,7 +124,9 @@ When editing lab content:
 | **C# samples** | `cd csharp && dotnet run [chat\|rag\|agent\|multi\|eval\|whisper\|toolcall]` |
 | **Zava Python** | `cd zava-creative-writer-local/src/api && pip install -r requirements.txt && uvicorn main:app` |
 | **Zava JS** | `cd zava-creative-writer-local/src/javascript && npm install && node main.mjs` |
+| **Zava JS (web)** | `cd zava-creative-writer-local/src/javascript && npm install && node server.mjs` |
 | **Zava C#** | `cd zava-creative-writer-local/src/csharp && dotnet run` |
+| **Zava C# (web)** | `cd zava-creative-writer-local/src/csharp-web && dotnet run` |
 | **Foundry Local CLI** | `foundry model list`, `foundry model run <model>`, `foundry service status` |
 | **Generate diagrams** | `npx mmdc -i <input>.mmd -o <output>.svg` (requires root `npm install`) |
 

@@ -16,7 +16,8 @@ All notable changes to this workshop are documented below.
 - **Part 10:** Converted compilation pipeline diagram from ASCII arrows to rendered SVG image
 - **Part 11:** Converted tool-calling flow and sequence diagrams to rendered SVG images
 - **Part 10:** Moved "Workshop Complete!" section to Part 11 (the final lab); replaced with "Next Steps" link
-- **KNOWN-ISSUES.md:** Removed resolved issues (#4 OGA Memory Leak, #7 Whisper path); renumbered remaining 9 issues sequentially; fixed mangled Environment Details table rows
+- **KNOWN-ISSUES.md:** Full revalidation of all issues against CLI v0.8.117. Removed resolved: OGA Memory Leak (cleanup added), Whisper path (FindSamplesDirectory), HTTP 500 sustained inference (not reproducible, [#494](https://github.com/microsoft/Foundry-Local/issues/494)), tool_choice limitations (now works with `"required"` and specific function targeting on qwen2.5-0.5b). Updated JS Whisper issue — now all files return empty/binary output (regression from v0.9.x, severity raised to Major). Updated #4 C# RID with auto-detect workaround and [#497](https://github.com/microsoft/Foundry-Local/issues/497) link. 7 open issues remain.
+- **javascript/foundry-local-whisper.mjs:** Fixed cleanup variable name (`whisperModel` → `model`)
 
 ### Validated
 - Python: `foundry-local.py`, `foundry-local-rag.py`, `foundry-local-tool-calling.py` — run successfully with cleanup

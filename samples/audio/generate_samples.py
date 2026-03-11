@@ -85,6 +85,62 @@ SAMPLES = [
             "The whole setup cost less than I expected and everything is built to last."
         ),
     },
+    {
+        "filename": "zava-full-project-walkthrough.wav",
+        "description": "Extended walkthrough of a complete Zava renovation project (1-2 min, for long-audio testing)",
+        "text": (
+            "Welcome back to the Zava DIY channel. Today I want to give you a complete walkthrough "
+            "of the garage renovation project I just finished using Zava products from start to finish. "
+            "This was a big project that took me about three weekends, so grab a coffee and let me take you through it. "
+            "\n"
+            "First, let me talk about the planning phase. I measured the entire garage which is a two-car garage, "
+            "roughly twenty-four feet by twenty-four feet. The floor was old cracked concrete and the walls were "
+            "bare drywall that had never been painted. I knew I wanted a clean, professional-looking workshop "
+            "that I could use for woodworking and general home repairs. "
+            "\n"
+            "The first thing I did was prep the walls. I sanded down any rough spots and applied two coats of "
+            "Zava UltraSmooth Interior Paint in the Workshop White colour. The coverage was incredible. "
+            "Even on raw drywall, the first coat covered about ninety percent and the second coat made it "
+            "look absolutely perfect. What I really appreciated was the low V-O-C formula. I was able to work "
+            "in the garage with the door closed and there was barely any smell at all. Each coat dried in about "
+            "thirty minutes, so I was able to do both coats in a single afternoon. "
+            "\n"
+            "Next, I set up the lighting. I installed four Zava BrightBeam LED Work Lights. Two are mounted "
+            "on the ceiling using the included bracket kits, and two more are on adjustable tripods that I can "
+            "move around depending on what I'm working on. Each light puts out five thousand lumens with a "
+            "colour temperature of five thousand Kelvin, which is very close to natural daylight. "
+            "The difference is night and day, pun intended. Before, I had two old fluorescent tubes that "
+            "flickered and cast shadows everywhere. Now the entire space is evenly lit and I can see fine details "
+            "when I'm working on precision cuts or finishing work. "
+            "\n"
+            "For storage, I went with the Zava TitanLock Tool Chest. It's the full-size model with twelve drawers "
+            "and a top compartment. The ball-bearing slides are buttery smooth even when the drawers are fully loaded. "
+            "I've got my hand tools in the top four drawers, power tool accessories in the middle section, and "
+            "heavier items like my circular saw and jigsaw in the deep bottom drawers. The built-in power strip "
+            "on the back is super convenient. I keep my Zava ProGrip Cordless Drill and its spare battery "
+            "charging there at all times so they're always ready to go. "
+            "\n"
+            "Speaking of the ProGrip Drill, it has become my most-used tool in the workshop. The brushless motor "
+            "gives it plenty of torque for driving screws into hardwood, and the battery lasts all day. "
+            "I used it extensively when I built the shelving units along the back wall. I drilled over two hundred "
+            "pilot holes and drove in two hundred screws on a single battery charge. "
+            "The two-speed gearbox is great too. I use the low speed for driving screws and the high speed for "
+            "drilling holes. The LED work light on the front is a nice touch for working in tight spaces. "
+            "\n"
+            "Finally, I built a small deck platform outside the side door of the garage using Zava EcoBoard "
+            "Composite Decking in the Driftwood Grey colour. It's only about six feet by eight feet, "
+            "just enough for a small seating area where I can take breaks. The composite material is fantastic. "
+            "It won't rot, warp, or splinter like traditional wood decking, and I never have to seal or "
+            "stain it. The hidden fastener system gives it a really clean look with no visible screw heads. "
+            "I calculated I needed about twelve boards total and the installation took less than a day. "
+            "\n"
+            "So that's the complete garage renovation. Total cost for all the Zava products came to about "
+            "fifteen hundred dollars, which I think is incredible value for a complete workshop transformation. "
+            "The quality of every single product has been outstanding and I would recommend the entire Zava "
+            "product line to anyone looking to set up or upgrade their workshop. "
+            "Thanks for watching and I'll see you in the next project video."
+        ),
+    },
 ]
 
 

@@ -27,6 +27,7 @@ By the end of this workshop you will be able to:
 | 9 | Transcribe audio with Whisper - speech-to-text on-device using the Foundry Local SDK |
 | 10 | Compile and run custom or Hugging Face models with ONNX Runtime GenAI and Foundry Local |
 | 11 | Enable local models to call external functions with the tool-calling pattern |
+| 12 | Build a browser-based UI for the Zava Creative Writer with real-time streaming |
 
 ---
 
@@ -260,6 +261,43 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 
 ---
 
+### Part 12: Building a Web UI for the Zava Creative Writer
+
+**Lab guide:** [`labs/part12-zava-ui.md`](labs/part12-zava-ui.md)
+
+- Add a browser-based front end to the Zava Creative Writer
+- Serve the shared UI from Python (FastAPI), JavaScript (Node.js HTTP), and C# (ASP.NET Core)
+- Consume streaming NDJSON in the browser with the Fetch API and ReadableStream
+- Live agent status badges and real-time article text streaming
+
+**Code (shared UI):**
+
+| File | Description |
+|------|-------------|
+| `zava-creative-writer-local/ui/index.html` | Page layout |
+| `zava-creative-writer-local/ui/style.css` | Styling |
+| `zava-creative-writer-local/ui/app.js` | Stream reader and DOM update logic |
+
+**Backend additions:**
+
+| Language | File | Description |
+|----------|------|-------------|
+| Python | `zava-creative-writer-local/src/api/main.py` | Updated to serve static UI |
+| JavaScript | `zava-creative-writer-local/src/javascript/server.mjs` | New HTTP server wrapping the orchestrator |
+| C# | `zava-creative-writer-local/src/csharp-web/Program.cs` | New ASP.NET Core minimal API project |
+
+---
+
+### Part 13: Workshop Complete
+
+**Lab guide:** [`labs/part13-workshop-complete.md`](labs/part13-workshop-complete.md)
+
+- Summary of everything you have built across all 12 parts
+- Further ideas for extending your applications
+- Links to resources and documentation
+
+---
+
 ## Project Structure
 
 ```
@@ -292,20 +330,28 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── foundry-local-tool-calling.mjs # Tool/function calling
 │   └── package.json
 ├── zava-creative-writer-local/ # Production multi-agent app
+│   ├── ui/                        # Shared browser UI (Part 12)
+│   │   ├── index.html             # Page layout
+│   │   ├── style.css              # Styling
+│   │   └── app.js                 # Stream reader and DOM updates
 │   └── src/
 │       ├── api/                   # Python FastAPI service
-│       │   ├── main.py            # FastAPI server
+│       │   ├── main.py            # FastAPI server (serves UI)
 │       │   ├── orchestrator.py    # Pipeline coordinator
 │       │   ├── foundry_config.py  # Shared Foundry Local config
 │       │   ├── requirements.txt
 │       │   └── agents/            # Researcher, Product, Writer, Editor
-│       ├── javascript/            # Node.js CLI app
-│       │   ├── main.mjs
+│       ├── javascript/            # Node.js CLI and web server
+│       │   ├── main.mjs           # CLI entry point
+│       │   ├── server.mjs         # HTTP server with UI (Part 12)
 │       │   ├── foundryConfig.mjs
 │       │   └── package.json
-│       └── csharp/                # .NET 9 console app
+│       ├── csharp/                # .NET 9 console app
+│       │   ├── Program.cs
+│       │   └── ZavaCreativeWriter.csproj
+│       └── csharp-web/            # .NET 9 web API (Part 12)
 │           ├── Program.cs
-│           └── ZavaCreativeWriter.csproj
+│           └── ZavaCreativeWriterWeb.csproj
 ├── labs/                          # Step-by-step lab guides
 │   ├── part1-getting-started.md
 │   ├── part2-foundry-local-sdk.md
@@ -316,7 +362,10 @@ foundry model run phi-3.5-mini  # Start an interactive chat
 │   ├── part7-zava-creative-writer.md
 │   ├── part8-evaluation-led-development.md
 │   ├── part9-whisper-voice-transcription.md
-│   └── part10-custom-models.md
+│   ├── part10-custom-models.md
+│   ├── part11-tool-calling.md
+│   ├── part12-zava-ui.md
+│   └── part13-workshop-complete.md
 ├── samples/
 │   └── audio/                     # Zava-themed WAV files for Part 9
 │       ├── generate_samples.py    # TTS script (pyttsx3) to create WAVs

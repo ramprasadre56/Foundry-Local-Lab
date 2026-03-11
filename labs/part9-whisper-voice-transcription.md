@@ -46,22 +46,23 @@ The OpenAI Whisper model is a general-purpose speech recognition model trained o
 - The model runs **entirely on your CPU** - no GPU required
 - Audio never leaves your device - **complete privacy**
 - The Foundry Local SDK handles model download and cache management
-- **Python and JavaScript** run inference directly using ONNX Runtime against the downloaded encoder/decoder ONNX models
-- **C#** uses the `Microsoft.AI.Foundry.Local` SDK with Windows ML for in-process transcription
+- **JavaScript and C#** provide a built-in `AudioClient` in the SDK that handles the entire transcription pipeline — no manual ONNX setup required
+- **Python** uses the SDK for model management and ONNX Runtime for direct inference against the encoder/decoder ONNX models
 
-### How the Pipeline Works (Python and JavaScript)
+### How the Pipeline Works (JavaScript and C#) — SDK AudioClient
+
+1. **Foundry Local SDK** downloads and caches the Whisper model
+2. `model.createAudioClient()` (JS) or `model.GetAudioClientAsync()` (C#) creates an `AudioClient`
+3. `audioClient.transcribe(path)` (JS) or `audioClient.TranscribeAudioAsync(path)` (C#) handles the full pipeline internally — audio preprocessing, encoder, decoder, and token decoding
+4. The `AudioClient` exposes a `settings.language` property (set to `"en"` for English) to guide accurate transcription
+
+### How the Pipeline Works (Python) — ONNX Runtime
 
 1. **Foundry Local SDK** downloads and caches the Whisper ONNX model files
 2. **Audio preprocessing** converts WAV audio into a mel spectrogram (80 mel bins x 3000 frames)
 3. **Encoder** processes the mel spectrogram and produces hidden states plus cross-attention key/value tensors
 4. **Decoder** runs autoregressively, generating one token at a time until it produces an end-of-text token
 5. **Tokeniser** decodes the output token IDs back into readable text
-
-### How the Pipeline Works (C#)
-
-1. **Foundry Local SDK** downloads and caches the Whisper model
-2. **Windows ML** runs inference in-process via the `AudioClient`
-3. `TranscribeAudioAsync()` handles the full pipeline internally
 
 ### Whisper Model Variants
 
@@ -250,25 +251,28 @@ Console.WriteLine($"Whisper model loaded: {model.Id}");
 
 </details>
 
-> **Why SDK instead of CLI?** The Foundry Local CLI does not support downloading or serving Whisper models directly. The SDK provides a reliable way to download and manage audio models programmatically. For Python and JavaScript, inference runs directly against the ONNX model files using ONNX Runtime.
+> **Why SDK instead of CLI?** The Foundry Local CLI does not support downloading or serving Whisper models directly. The SDK provides a reliable way to download and manage audio models programmatically. The JavaScript and C# SDKs include a built-in `AudioClient` that handles the entire transcription pipeline. Python uses ONNX Runtime for direct inference against the cached model files.
 
 ---
 
 ### Exercise 2 - Understand the Whisper SDK
 
-Whisper transcription uses different approaches depending on the language. Python and JavaScript use the Foundry Local SDK for model management and ONNX Runtime for direct inference against the encoder/decoder ONNX models. C# uses the Foundry Local SDK with Windows ML for in-process transcription via the `AudioClient`.
+Whisper transcription uses different approaches depending on the language. **JavaScript and C#** provide a built-in `AudioClient` in the Foundry Local SDK that handles the full pipeline (audio preprocessing, encoder, decoder, token decoding) in a single method call. **Python** uses the Foundry Local SDK for model management and ONNX Runtime for direct inference against the encoder/decoder ONNX models.
 
 | Component | Python | JavaScript | C# |
 |-----------|--------|------------|----|
-| **SDK packages** | `foundry-local-sdk`, `onnxruntime`, `transformers`, `librosa` | `foundry-local-sdk`, `onnxruntime-node` | `Microsoft.AI.Foundry.Local` (Windows ML) |
+| **SDK packages** | `foundry-local-sdk`, `onnxruntime`, `transformers`, `librosa` | `foundry-local-sdk` | `Microsoft.AI.Foundry.Local` |
 | **Model management** | `FoundryLocalManager(alias)` | `FoundryLocalManager.create()` + `catalog.getModel()` | `FoundryLocalManager.CreateAsync()` + catalog |
-| **Feature extraction** | `WhisperFeatureExtractor` + `librosa` | Manual mel spectrogram (FFT + filterbank) | Handled by Windows ML |
-| **Inference** | `ort.InferenceSession` (encoder + decoder) | `ort.InferenceSession` (encoder + decoder) | `audioClient.TranscribeAudioAsync()` |
-| **Token decoding** | `WhisperTokenizer` | Manual byte-level BPE via `vocab.json` | Handled by Windows ML |
+| **Feature extraction** | `WhisperFeatureExtractor` + `librosa` | Handled by SDK `AudioClient` | Handled by SDK `AudioClient` |
+| **Inference** | `ort.InferenceSession` (encoder + decoder) | `audioClient.transcribe()` | `audioClient.TranscribeAudioAsync()` |
+| **Token decoding** | `WhisperTokenizer` | Handled by SDK `AudioClient` | Handled by SDK `AudioClient` |
+| **Language setting** | Set via `forced_ids` in decoder tokens | `audioClient.settings.language = "en"` | `audioClient.Settings.Language = "en"` |
 | **Input** | WAV file path | WAV file path | WAV file path |
-| **Output** | Decoded text string | Decoded text string | `result.Text` |
+| **Output** | Decoded text string | `result.text` | `result.Text` |
 
-> **SDK Patterns:** Python uses `FoundryLocalManager(alias)` to bootstrap, then `get_cache_location()` to find the ONNX model files. JavaScript uses `FoundryLocalManager.create()` + `catalog.getModel(alias)` to manage the model. C# uses the `CreateAsync()` + catalog pattern with an integrated `AudioClient`. See [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md) for full details.
+> **Important:** Always set the language on the `AudioClient` (e.g. `"en"` for English). Without an explicit language setting, the model may produce garbled output as it attempts to auto-detect the language.
+
+> **SDK Patterns:** Python uses `FoundryLocalManager(alias)` to bootstrap, then `get_cache_location()` to find the ONNX model files. JavaScript and C# use the SDK’s built-in `AudioClient` — obtained via `model.createAudioClient()` (JS) or `model.GetAudioClientAsync()` (C#) — which handles the entire transcription pipeline. See [Part 2: Foundry Local SDK Deep Dive](part2-foundry-local-sdk.md) for full details.
 
 ---
 
@@ -426,9 +430,7 @@ Create a file `foundry-local-whisper.mjs`:
 
 ```javascript
 import { FoundryLocalManager } from "foundry-local-sdk";
-import * as ort from "onnxruntime-node";
 import fs from "node:fs";
-import path from "node:path";
 
 const modelAlias = "whisper-medium";
 const audioFile = process.argv[2] || "sample.wav";
@@ -455,15 +457,20 @@ await model.load();
 
 // Step 2: Create an audio client and transcribe
 const audioClient = model.createAudioClient();
+audioClient.settings.language = "en";
+
 console.log(`Transcribing: ${audioFile}`);
 const result = await audioClient.transcribe(audioFile);
 
 console.log("\n--- Transcription ---");
-console.log(result);
+console.log(result.text);
 console.log("---------------------");
+
+// Cleanup
+await model.unload();
 ```
 
-> **Note:** The SDK 0.9.0 provides a built-in `AudioClient` with `model.createAudioClient()` that handles ONNX inference internally. The full sample in `javascript/foundry-local-whisper.mjs` uses this streamlined approach.
+> **Note:** The Foundry Local SDK provides a built-in `AudioClient` via `model.createAudioClient()` that handles the entire ONNX inference pipeline internally — no `onnxruntime-node` import needed. Always set `audioClient.settings.language = "en"` to ensure accurate English transcription.
 
 #### Run it
 
@@ -484,7 +491,8 @@ node foundry-local-whisper.mjs ../samples/audio/zava-project-planning.wav
 | `await catalog.getModel(alias)` | Get a model from the catalogue |
 | `model.download()` / `model.load()` | Download and load the Whisper model |
 | `model.createAudioClient()` | Create an audio client for transcription |
-| `audioClient.transcribe(path)` | Transcribe an audio file to text |
+| `audioClient.settings.language = "en"` | Set the transcription language (required for accurate output) |
+| `audioClient.transcribe(path)` | Transcribe an audio file, returns `{ text, duration }` |
 
 </details>
 
@@ -500,7 +508,7 @@ dotnet new console --framework net9.0
 dotnet add package Microsoft.AI.Foundry.Local
 ```
 
-> **Note:** The C# track uses the `Microsoft.AI.Foundry.Local` package with Windows ML, which provides an in-process `AudioClient` instead of going through ONNX Runtime directly. This is more integrated but Windows-only.
+> **Note:** The C# track uses the `Microsoft.AI.Foundry.Local` package which provides a built-in `AudioClient` via `model.GetAudioClientAsync()`. This handles the full transcription pipeline in-process — no separate ONNX Runtime setup needed.
 
 #### Transcription Code
 
@@ -553,6 +561,7 @@ await model.LoadAsync(default);
 Console.WriteLine($"Transcribing: {audioFile}");
 
 var audioClient = await model.GetAudioClientAsync();
+audioClient.Settings.Language = "en";
 
 var result = await audioClient.TranscribeAudioAsync(audioFile);
 
@@ -577,14 +586,14 @@ dotnet run -- ..\samples\audio\zava-workshop-setup.wav
 | Method | Purpose |
 |--------|---------|
 | `FoundryLocalManager.CreateAsync(config)` | Initialise Foundry Local with configuration |
-| `manager.EnsureEpsDownloadedAsync()` | Download execution providers |
 | `catalog.GetModelAsync(alias)` | Get model from catalog |
 | `model.DownloadAsync()` | Download the Whisper model |
 | `model.GetAudioClientAsync()` | Get the AudioClient (not ChatClient!) |
+| `audioClient.Settings.Language = "en"` | Set the transcription language (required for accurate output) |
 | `audioClient.TranscribeAudioAsync(path)` | Transcribe an audio file |
 | `result.Text` | The transcribed text |
 
-> **C# vs Python/JS:** The C# track uses the `WinML` package for in-process transcription, whilst Python and JavaScript use the Foundry Local service with the OpenAI-compatible audio transcription endpoint.
+> **C# vs Python/JS:** The C# SDK provides a built-in `AudioClient` for in-process transcription via `model.GetAudioClientAsync()`, similar to the JavaScript SDK. Python uses ONNX Runtime directly for inference against the cached encoder/decoder models.
 
 </details>
 
@@ -618,7 +627,7 @@ cd javascript
 node foundry-local-whisper.mjs
 ```
 
-The sample uses `FoundryLocalManager.create()` and `catalog.getModel(alias)` to initialise the SDK, then uses the `AudioClient` to transcribe each file.
+The sample uses `FoundryLocalManager.create()` and `catalog.getModel(alias)` to initialise the SDK, then uses the `AudioClient` (with `settings.language = "en"`) to transcribe each file.
 
 </details>
 
@@ -632,7 +641,7 @@ cd csharp
 dotnet run whisper
 ```
 
-The sample uses `FoundryLocalManager.CreateAsync()` and the Windows ML `AudioClient` for in-process transcription.
+The sample uses `FoundryLocalManager.CreateAsync()` and the SDK’s `AudioClient` (with `Settings.Language = "en"`) for in-process transcription.
 
 </details>
 
@@ -687,18 +696,19 @@ const stream = await client.chat.completions.create({
 // Audio transcription (This Part):
 // Uses the SDK's built-in AudioClient
 const audioClient = model.createAudioClient();
+audioClient.settings.language = "en"; // Always set language for best results
 const result = await audioClient.transcribe("audio.wav");
 console.log(result.text);
 ```
 
-**Key insight:** Chat models use the OpenAI-compatible API via `manager.urls[0] + "/v1"`. Whisper transcription uses the SDK's `AudioClient`, obtained from `model.createAudioClient()`.
+**Key insight:** Chat models use the OpenAI-compatible API via `manager.urls[0] + "/v1"`. Whisper transcription uses the SDK’s `AudioClient`, obtained from `model.createAudioClient()`. Set `settings.language` to avoid garbled output from auto-detection.
 
 </details>
 
 <details>
 <summary><b>C# - Key Differences from Chat</b></summary>
 
-The C# approach is fundamentally different - it uses Windows ML for in-process transcription:
+The C# approach uses the SDK’s built-in `AudioClient` for in-process transcription:
 
 **Model initialisation:**
 
@@ -725,17 +735,18 @@ await model.LoadAsync(default);
 ```csharp
 // Get the audio client (not a chat client!)
 var audioClient = await model.GetAudioClientAsync();
+audioClient.Settings.Language = "en"; // Always set language for best results
 
 // Transcribe - returns an object with a .Text property
 var response = await audioClient.TranscribeAudioAsync(filePath);
 Console.WriteLine(response.Text);
 ```
 
-**Key insight:** C# uses `FoundryLocalManager.CreateAsync()` and gets an `AudioClient` directly - no ONNX Runtime setup needed. The model runs in-process via Windows ML, handling feature extraction, inference, and token decoding internally.
+**Key insight:** C# uses `FoundryLocalManager.CreateAsync()` and gets an `AudioClient` directly — no ONNX Runtime setup needed. Set `Settings.Language` to avoid garbled output from auto-detection.
 
 </details>
 
-> **Summary:** Python uses the Foundry Local SDK for model management and ONNX Runtime for direct inference against the encoder/decoder models. JavaScript uses the SDK's built-in `AudioClient` for transcription. C# uses Windows ML for integrated in-process transcription without manual ONNX Runtime setup.
+> **Summary:** Python uses the Foundry Local SDK for model management and ONNX Runtime for direct inference against the encoder/decoder models. JavaScript and C# both use the SDK’s built-in `AudioClient` for streamlined transcription — create the client, set the language, and call `transcribe()` / `TranscribeAudioAsync()`. Always set the language property on the AudioClient for accurate results.
 
 ---
 
@@ -772,24 +783,38 @@ Try these modifications to deepen your understanding:
 
 ---
 
-## SDK Limitations
+## SDK Audio API Reference
 
-> **Current limitation:** The `TranscribeAudioAsync()` method returns only the complete transcribed text. Segment-level timestamps and word-level timing information are **not currently available**. Future SDK versions may add these features.
+> **JavaScript AudioClient:**
+> - `model.createAudioClient()` — creates an `AudioClient` instance
+> - `audioClient.settings.language` — set the transcription language (e.g. `"en"`)
+> - `audioClient.settings.temperature` — control randomness (optional)
+> - `audioClient.transcribe(filePath)` — transcribe a file, returns `{ text, duration }`
+> - `audioClient.transcribeStreaming(filePath, callback)` — stream transcription chunks via callback
+>
+> **C# AudioClient:**
+> - `await model.GetAudioClientAsync()` — creates an `OpenAIAudioClient` instance
+> - `audioClient.Settings.Language` — set the transcription language (e.g. `"en"`)
+> - `audioClient.Settings.Temperature` — control randomness (optional)
+> - `await audioClient.TranscribeAudioAsync(filePath)` — transcribe a file, returns object with `.Text`
+> - `audioClient.TranscribeAudioStreamingAsync(filePath)` — returns `IAsyncEnumerable` of transcription chunks
+
+> **Tip:** Always set the language property before transcribing. Without it, the Whisper model attempts auto-detection, which can produce garbled output (a single replacement character instead of text).
 
 ---
 
 ## Comparison: Chat Models vs. Whisper
 
-| Aspect | Chat Models (Parts 3-7) | Whisper - Python/JS | Whisper - C# |
-|--------|------------------------|--------------------|--------------|
+| Aspect | Chat Models (Parts 3-7) | Whisper - Python | Whisper - JS / C# |
+|--------|------------------------|--------------------|--------------------|
 | **Task type** | `chat` | `automatic-speech-recognition` | `automatic-speech-recognition` |
 | **Input** | Text messages (JSON) | Audio files (WAV/MP3/M4A) | Audio files (WAV/MP3/M4A) |
 | **Output** | Generated text (streamed) | Transcribed text (complete) | Transcribed text (complete) |
-| **SDK package** | `openai` + `foundry-local-sdk` | `foundry-local-sdk` + `onnxruntime` (Python) / `foundry-local-sdk` (JS) | `Microsoft.AI.Foundry.Local.WinML` |
-| **API method** | `client.chat.completions.create()` | ONNX Runtime direct (Python) / `audioClient.transcribe()` (JS) | `audioClient.TranscribeAudioAsync()` |
-| **Streaming** | Yes | No | No |
+| **SDK package** | `openai` + `foundry-local-sdk` | `foundry-local-sdk` + `onnxruntime` | `foundry-local-sdk` (JS) / `Microsoft.AI.Foundry.Local` (C#) |
+| **API method** | `client.chat.completions.create()` | ONNX Runtime direct | `audioClient.transcribe()` (JS) / `audioClient.TranscribeAudioAsync()` (C#) |
+| **Language setting** | N/A | Decoder prompt tokens | `audioClient.settings.language` (JS) / `audioClient.Settings.Language` (C#) |
+| **Streaming** | Yes | No | `transcribeStreaming()` (JS) / `TranscribeAudioStreamingAsync()` (C#) |
 | **Privacy benefit** | Code/data stays local | Audio data stays local | Audio data stays local |
-| **Min Foundry version** | Any | **v0.8.101 or earlier** | **v0.8.101 or earlier** |
 
 ---
 
@@ -798,11 +823,12 @@ Try these modifications to deepen your understanding:
 | Concept | What You Learned |
 |---------|-----------------|
 | **Whisper on-device** | Speech-to-text runs entirely locally, ideal for transcribing Zava customer calls and product reviews on-device |
-| **Version requirement** | Whisper models require Foundry Local **v0.8.101 or above**, downloaded via the SDK |
-| **Python** | Uses `foundry-local-sdk` for model management + `onnxruntime` for direct ONNX inference |
-| **JavaScript** | Uses `foundry-local-sdk` with built-in `AudioClient` for transcription |
-| **C# (Windows ML)** | Uses `Microsoft.AI.Foundry.Local` with integrated `AudioClient` for in-process transcription |
-| **ONNX Runtime** | Python uses `transformers` + `librosa` for feature extraction |
+| **SDK AudioClient** | JavaScript and C# SDKs provide a built-in `AudioClient` that handles the full transcription pipeline in a single call |
+| **Language setting** | Always set the AudioClient language (e.g. `"en"`) — without it, auto-detection may produce garbled output |
+| **Python** | Uses `foundry-local-sdk` for model management + `onnxruntime` + `transformers` + `librosa` for direct ONNX inference |
+| **JavaScript** | Uses `foundry-local-sdk` with `model.createAudioClient()` — set `settings.language`, then call `transcribe()` |
+| **C#** | Uses `Microsoft.AI.Foundry.Local` with `model.GetAudioClientAsync()` — set `Settings.Language`, then call `TranscribeAudioAsync()` |
+| **Streaming support** | JS and C# SDKs also offer `transcribeStreaming()` / `TranscribeAudioStreamingAsync()` for chunk-by-chunk output |
 | **CPU-optimised** | The CPU variant (3.05 GB) works on any Windows device without a GPU |
 | **Privacy-first** | Perfect for keeping Zava customer interactions and proprietary product data on-device |
 

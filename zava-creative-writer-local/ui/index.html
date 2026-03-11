@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zava Creative Writer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Zava Creative Writer</h1>
+    <p class="subtitle">Multi-agent article generation powered by Foundry Local</p>
+  </header>
+
+  <main>
+    <!-- Input form -->
+    <section class="input-panel">
+      <h2>Article Request</h2>
+
+      <label for="research">Research Topic</label>
+      <textarea id="research" rows="2" placeholder="e.g. Latest DIY home improvement trends and weekend renovation projects">Can you find the latest DIY home improvement trends and weekend renovation projects?</textarea>
+
+      <label for="products">Product Context</label>
+      <textarea id="products" rows="2" placeholder="e.g. Power tools and paints">Can you use a selection of power tools and paints as context?</textarea>
+
+      <label for="assignment">Writing Assignment</label>
+      <textarea id="assignment" rows="3" placeholder="e.g. Write a fun and engaging article...">Write a fun and engaging article that includes the research and product information. The article should be between 800 and 1000 words.</textarea>
+
+      <button id="generateBtn" type="button">Generate Article</button>
+    </section>
+
+    <!-- Agent status panel -->
+    <section class="status-panel">
+      <h2>Agent Pipeline</h2>
+      <div id="agentStatus">
+        <div class="agent-row" id="status-researcher">
+          <span class="agent-name">Researcher</span>
+          <span class="agent-state" data-state="waiting">Waiting</span>
+        </div>
+        <div class="agent-row" id="status-marketing">
+          <span class="agent-name">Product Search</span>
+          <span class="agent-state" data-state="waiting">Waiting</span>
+        </div>
+        <div class="agent-row" id="status-writer">
+          <span class="agent-name">Writer</span>
+          <span class="agent-state" data-state="waiting">Waiting</span>
+        </div>
+        <div class="agent-row" id="status-editor">
+          <span class="agent-name">Editor</span>
+          <span class="agent-state" data-state="waiting">Waiting</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Output panel -->
+    <section class="output-panel">
+      <h2>Generated Article</h2>
+      <div id="articleOutput" class="article-output">
+        <p class="placeholder-text">Your article will appear here once the pipeline runs.</p>
+      </div>
+    </section>
+
+    <!-- Details panels (collapsible) -->
+    <section class="details-panel">
+      <details id="researchDetails">
+        <summary>Research Results</summary>
+        <div class="details-content" id="researchContent">No data yet.</div>
+      </details>
+
+      <details id="productDetails">
+        <summary>Product Matches</summary>
+        <div class="details-content" id="productContent">No data yet.</div>
+      </details>
+
+      <details id="editorDetails">
+        <summary>Editor Feedback</summary>
+        <div class="details-content" id="editorContent">No data yet.</div>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by <a href="https://foundrylocal.ai" target="_blank" rel="noopener">Foundry Local</a> &mdash; all processing runs on your device.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
