@@ -4,6 +4,39 @@ All notable changes to this workshop are documented below.
 
 ---
 
+## 2026-03-11 — Part 12 & 13, Web UI, Whisper Rewrite, NPU Workaround, and Validation
+
+### Added
+- **Part 12: Building a Web UI for the Zava Creative Writer** — new lab guide (`labs/part12-zava-ui.md`) with exercises covering streaming NDJSON, browser `ReadableStream`, live agent status badges, and real-time article text streaming
+- **Part 13: Workshop Complete** — new summary lab (`labs/part13-workshop-complete.md`) with a recap of all 12 parts, further ideas, and resource links
+- **Zava UI front end:** `zava-creative-writer-local/ui/index.html`, `style.css`, `app.js` — shared vanilla HTML/CSS/JS browser interface consumed by all three backends
+- **JavaScript HTTP server:** `zava-creative-writer-local/src/javascript/server.mjs` — new Express-style HTTP server wrapping the orchestrator for browser-based access
+- **C# ASP.NET Core backend:** `zava-creative-writer-local/src/csharp-web/Program.cs` and `ZavaCreativeWriterWeb.csproj` — new minimal API project serving the UI and streaming NDJSON
+- **Audio sample generator:** `samples/audio/generate_samples.py` — offline TTS script using `pyttsx3` to generate Zava-themed WAV files for Part 9
+- **Audio sample:** `samples/audio/zava-full-project-walkthrough.wav` — new longer audio sample for transcription testing
+- **Validation script:** `validate-npu-workaround.ps1` — automated PowerShell script to validate the NPU/QNN workaround across all C# samples
+- **Mermaid diagram SVGs:** `images/part12-architecture.svg`, `part12-message-types.svg`, `part12-streaming-sequence.svg`
+- **NPU workaround (Issue #8):** All 7 C# files (`BasicChat.cs`, `AgentEvaluation.cs`, `MultiAgent.cs`, `RagPipeline.cs`, `SingleAgent.cs`, `zava-creative-writer-local/src/csharp/Program.cs`, `zava-creative-writer-local/src/csharp-web/Program.cs`) now wrap `LoadAsync()` in try/catch to detect QNN EP failure and fall back to CPU variant via `model.Variants` + `model.SelectVariant()`
+
+### Changed
+- **Part 9 (Whisper):** Major rewrite — JavaScript now uses the SDK's built-in `AudioClient` (`model.createAudioClient()`) instead of manual ONNX Runtime inference; updated architecture descriptions, comparison tables, and pipeline diagrams to reflect JS/C# `AudioClient` approach vs Python ONNX Runtime approach
+- **Part 11:** Updated navigation links (now points to Part 12); added rendered SVG diagrams for tool-calling flow and sequence
+- **Part 10:** Updated navigation to route through Part 12 instead of ending the workshop
+- **Python Whisper (`foundry-local-whisper.py`):** Expanded with additional audio samples and improved error handling
+- **JavaScript Whisper (`foundry-local-whisper.mjs`):** Rewritten to use `model.createAudioClient()` with `audioClient.transcribe()` instead of manual ONNX Runtime sessions
+- **Python FastAPI (`zava-creative-writer-local/src/api/main.py`):** Updated to serve static UI files alongside the API
+- **Zava C# console (`zava-creative-writer-local/src/csharp/Program.cs`):** Added NPU workaround
+- **README.md:** Added Part 12 section with code sample tables and backend additions; added Part 13 section; updated learning objectives and project structure
+- **KNOWN-ISSUES.md:** Added Issue #8 (C# SDK NPU model variant fails to load on ARM — QNN EP not in NuGet package) with full workaround documentation; renumbered and reorganised issues; updated environment details with .NET SDK 10.0.104
+- **AGENTS.md:** Updated project structure tree with new `zava-creative-writer-local` entries (`ui/`, `csharp-web/`, `server.mjs`)
+
+### Validated
+- NPU workaround validated on Snapdragon X Elite (ARM64) — model falls back to CPU variant (`Phi-3.5-mini-instruct-generic-cpu:1`) when QNN EP is unavailable
+- C# agent sample runs successfully with NPU workaround (exit code 0)
+- Foundry Local CLI v0.8.117 and SDK v0.9.0 on .NET SDK 9.0.312
+
+---
+
 ## 2026-03-11 — Code Fixes, Model Cleanup, Mermaid Diagrams, and Validation
 
 ### Fixed
