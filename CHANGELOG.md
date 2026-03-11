@@ -16,7 +16,7 @@ All notable changes to this workshop are documented below.
 - **Audio sample:** `samples/audio/zava-full-project-walkthrough.wav` — new longer audio sample for transcription testing
 - **Validation script:** `validate-npu-workaround.ps1` — automated PowerShell script to validate the NPU/QNN workaround across all C# samples
 - **Mermaid diagram SVGs:** `images/part12-architecture.svg`, `part12-message-types.svg`, `part12-streaming-sequence.svg`
-- **WinML package (Issue #8):** All 3 C# `.csproj` files (`csharp/csharp.csproj`, `zava-creative-writer-local/src/csharp/ZavaCreativeWriter.csproj`, `zava-creative-writer-local/src/csharp-web/ZavaCreativeWriterWeb.csproj`) now use conditional TFM and mutually exclusive package references for cross-platform support. On Windows: `net9.0-windows10.0.26100` TFM + `Microsoft.AI.Foundry.Local.WinML` (superset that includes QNN EP plugin). On non-Windows: `net9.0` TFM + `Microsoft.AI.Foundry.Local` (base SDK). The hardcoded `win-arm64` RID in Zava projects was replaced with auto-detect. A transitive dependency workaround excludes native assets from `Microsoft.ML.OnnxRuntime.Gpu.Linux` which has a broken win-arm64 reference. The previous try/catch NPU workaround has been removed from all 7 C# files.
+- **WinML cross-platform support:** All 3 C# `.csproj` files (`csharp/csharp.csproj`, `zava-creative-writer-local/src/csharp/ZavaCreativeWriter.csproj`, `zava-creative-writer-local/src/csharp-web/ZavaCreativeWriterWeb.csproj`) now use conditional TFM and mutually exclusive package references for cross-platform support. On Windows: `net9.0-windows10.0.26100` TFM + `Microsoft.AI.Foundry.Local.WinML` (superset that includes QNN EP plugin). On non-Windows: `net9.0` TFM + `Microsoft.AI.Foundry.Local` (base SDK). The hardcoded `win-arm64` RID in Zava projects was replaced with auto-detect. A transitive dependency workaround excludes native assets from `Microsoft.ML.OnnxRuntime.Gpu.Linux` which has a broken win-arm64 reference. The previous try/catch NPU workaround has been removed from all 7 C# files.
 
 ### Changed
 - **Part 9 (Whisper):** Major rewrite — JavaScript now uses the SDK's built-in `AudioClient` (`model.createAudioClient()`) instead of manual ONNX Runtime inference; updated architecture descriptions, comparison tables, and pipeline diagrams to reflect JS/C# `AudioClient` approach vs Python ONNX Runtime approach
@@ -27,12 +27,14 @@ All notable changes to this workshop are documented below.
 - **Python FastAPI (`zava-creative-writer-local/src/api/main.py`):** Updated to serve static UI files alongside the API
 - **Zava C# console (`zava-creative-writer-local/src/csharp/Program.cs`):** Removed NPU workaround (now handled by WinML package)
 - **README.md:** Added Part 12 section with code sample tables and backend additions; added Part 13 section; updated learning objectives and project structure
-- **KNOWN-ISSUES.md:** Updated Issue #8 (C# SDK NPU model variant — resolved by adding `Microsoft.AI.Foundry.Local.WinML` package which provides QNN EP as a plugin); updated Issue #2 to explain QNN as a WinML plugin EP; renumbered and reorganised issues; updated environment details with .NET SDK 10.0.104
-- **AGENTS.md:** Updated project structure tree with new `zava-creative-writer-local` entries (`ui/`, `csharp-web/`, `server.mjs`)
+- **KNOWN-ISSUES.md:** Removed resolved Issue #7 (C# SDK NPU Model Variant — now handled by WinML package). Renumbered remaining issues to #1–#6. Updated environment details with .NET SDK 10.0.104
+- **AGENTS.md:** Updated project structure tree with new `zava-creative-writer-local` entries (`ui/`, `csharp-web/`, `server.mjs`); updated C# key packages and conditional TFM details
+- **labs/part2-foundry-local-sdk.md:** Updated `.csproj` example to show full cross-platform pattern with conditional TFM, mutually exclusive package references, and explanatory note
 
 ### Validated
-- QNN EP resolved on Snapdragon X Elite (ARM64) via `Microsoft.AI.Foundry.Local.WinML` package — NPU variant loads directly without CPU fallback
-- C# agent sample runs successfully with WinML package (exit code 0)
+- All 3 C# projects (`csharp`, `ZavaCreativeWriter`, `ZavaCreativeWriterWeb`) build successfully on Windows ARM64
+- Chat sample (`dotnet run chat`): model loads as `phi-3.5-mini-instruct-qnn-npu:1` via WinML/QNN — NPU variant loads directly without CPU fallback
+- Agent sample (`dotnet run agent`): runs end-to-end with multi-turn conversation, exit code 0
 - Foundry Local CLI v0.8.117 and SDK v0.9.0 on .NET SDK 9.0.312
 
 ---
@@ -73,7 +75,6 @@ All notable changes to this workshop are documented below.
 - **Part 2, Exercise 9:** Model upgrades and catalogue refresh — `is_model_upgradeable()`, `upgrade_model()`, `updateModels()`
 - **Part 2, Exercise 10:** Reasoning models — `phi-4-mini-reasoning` with `<think>` tag parsing examples
 - **Part 3, Exercise 4:** `createChatClient` as alternative to OpenAI SDK, with streaming callback pattern documentation
-- **KNOWN-ISSUES.md:** Added issue #10 (ChatClient streaming uses callbacks, not async iterators) and #11 (tool_choice limitations per model)
 - **AGENTS.md:** Added Tool Calling, ChatClient, and Reasoning Models coding conventions
 
 ### Changed
@@ -124,5 +125,15 @@ All notable changes to this workshop are documented below.
 | `csharp/Program.cs` | 2026-03-10 | Added `toolcall` CLI command |
 | `README.md` | 2026-03-10 | Part 11, project structure |
 | `AGENTS.md` | 2026-03-10 | Tool calling + ChatClient conventions |
-| `KNOWN-ISSUES.md` | 2026-03-11 | Issues #10-11, updated #4 root cause |
+| `KNOWN-ISSUES.md` | 2026-03-11 | Removed resolved Issue #7, 6 open issues remain |
+| `csharp/csharp.csproj` | 2026-03-11 | Cross-platform TFM, WinML/base SDK conditional refs |
+| `zava-creative-writer-local/src/csharp/ZavaCreativeWriter.csproj` | 2026-03-11 | Cross-platform TFM, auto-detect RID |
+| `zava-creative-writer-local/src/csharp-web/ZavaCreativeWriterWeb.csproj` | 2026-03-11 | Cross-platform TFM, auto-detect RID |
+| `csharp/BasicChat.cs` | 2026-03-11 | Removed NPU try/catch workaround |
+| `csharp/SingleAgent.cs` | 2026-03-11 | Removed NPU try/catch workaround |
+| `csharp/MultiAgent.cs` | 2026-03-11 | Removed NPU try/catch workaround |
+| `csharp/RagPipeline.cs` | 2026-03-11 | Removed NPU try/catch workaround |
+| `csharp/AgentEvaluation.cs` | 2026-03-11 | Removed NPU try/catch workaround |
+| `labs/part2-foundry-local-sdk.md` | 2026-03-11 | Cross-platform .csproj example |
+| `AGENTS.md` | 2026-03-11 | Updated C# packages and TFM details |
 | `CHANGELOG.md` | 2026-03-11 | This file |
