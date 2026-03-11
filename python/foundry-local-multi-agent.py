@@ -88,6 +88,7 @@ async def main():
 
     print("=" * 60)
     print("✅ Multi-agent workflow complete!")
-
+    # Cleanup: unload the model to release resources
+    manager.unload_model(alias)
 
 asyncio.run(main())

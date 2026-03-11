@@ -75,17 +75,7 @@ python -m pip install --upgrade pip
 
 Foundry Local requires models in ONNX format with ONNX Runtime GenAI configuration. Most open-source models on Hugging Face are distributed as PyTorch or Safetensors weights, so a conversion step is needed.
 
-```
-Source Model           Model Builder          Compiled Output
-(Hugging Face)     ──────────────────►      (Optimised ONNX)
-
-Qwen/Qwen3-0.6B    onnxruntime_genai        models/qwen3/
-  - Safetensors     ─────────────►            - model.onnx
-  - tokenizer        convert +               - model.onnx.data
-  - config.json       quantise               - tokenizer files
-                                              - genai_config.json
-                                              - chat_template.jinja
-```
+![Custom model compilation pipeline](../images/custom-model-pipeline.svg)
 
 ### What Does the Model Builder Do?
 

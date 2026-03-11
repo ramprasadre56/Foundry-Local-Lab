@@ -52,17 +52,7 @@ And returns a structured score. This mirrors the Editor pattern from Part 7 but 
 
 ### 4. Eval-Driven Iteration Loop
 
-```
-┌─────────────────────────────────────────────┐
-│  1. Define golden dataset (test cases)      │
-│  2. Run agent on all test cases             │
-│  3. Score with rule-based + LLM-as-judge    │
-│  4. Review scorecard                        │
-│  5. Tweak prompt / instructions             │
-│  6. Re-run and compare scores                │
-│  7. Ship when scores meet threshold         │
-└─────────────────────────────────────────────┘
-```
+![Eval-driven iteration loop](../images/eval-loop-flowchart.svg)
 
 ---
 

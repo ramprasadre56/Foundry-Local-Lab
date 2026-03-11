@@ -165,3 +165,6 @@ for audio_path in audio_files:
     print(f"({elapsed:.1f}s)\n")
 
 print(f"Done — transcribed {len(audio_files)} file(s).")
+
+# Cleanup: unload the model to release resources
+manager.unload_model(model_alias)

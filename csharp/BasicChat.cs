@@ -70,5 +70,8 @@ public static class BasicChat
             }
         }
         Console.WriteLine();
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 }

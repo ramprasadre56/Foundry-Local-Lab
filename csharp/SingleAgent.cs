@@ -87,5 +87,8 @@ public static class SingleAgent
             Console.Write(update);
         }
         Console.WriteLine();
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 }

@@ -8,11 +8,7 @@
 
 Tool calling (also known as **function calling**) lets a language model request the execution of functions you define. Instead of guessing an answer, the model recognises when a tool would help and returns a structured request for your code to execute. Your application runs the function, sends the result back, and the model incorporates that information into its final response.
 
-```
-User message → Model decides to call tool → Your code executes tool
-                                                      ↓
-                              Final answer ← Model uses tool result
-```
+![Tool-calling flow](../images/tool-calling-flow.svg)
 
 This pattern is essential for building agents that can:
 
@@ -88,20 +84,7 @@ By the end of this lab you will be able to:
 
 Before writing code, study this sequence diagram:
 
-```
-┌──────┐     ┌──────┐     ┌────────┐
-│ User │     │Model │     │Your App│
-└──┬───┘     └──┬───┘     └───┬────┘
-   │  message   │              │
-   │───────────>│              │
-   │            │  tool_calls  │
-   │            │─────────────>│
-   │            │              │ execute function
-   │            │  tool result │
-   │            │<─────────────│
-   │  answer    │              │
-   │<───────────│              │
-```
+![Tool-calling sequence diagram](../images/tool-calling-sequence.svg)
 
 **Key observations:**
 

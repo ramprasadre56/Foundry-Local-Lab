@@ -133,6 +133,10 @@ async function main() {
 
   console.log("=".repeat(60));
   console.log("Multi-agent workflow complete!");
+
+  // Cleanup: unload the model to release resources
+  await model.unload();
+  await manager.stopWebService();
 }
 
 main();

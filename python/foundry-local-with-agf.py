@@ -40,5 +40,8 @@ async def main():
             print(chunk.text, end="", flush=True)
     print()
 
+    # Cleanup: unload the model to release resources
+    manager.unload_model(alias)
+
 
 asyncio.run(main())

@@ -149,6 +149,10 @@ async function main() {
     }
   }
   console.log();
+
+  // Cleanup: unload the model to release resources
+  await model.unload();
+  await manager.stopWebService();
 }
 
 main();

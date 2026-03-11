@@ -1,11 +1,14 @@
 # Known Issues — Foundry Local Workshop
 
-Issues encountered while building and testing this workshop on a **Snapdragon X Elite (ARM64)** device running Windows, with Foundry Local SDK v0.9.0 and .NET SDK 10.0.
+Issues encountered while building and testing this workshop on a **Snapdragon X Elite (ARM64)** device running Windows, with Foundry Local SDK v0.9.0, CLI v0.8.117, and .NET SDK 10.0.
+
+> **Last validated:** 2026-03-11
 
 ---
 
 ## 1. Snapdragon X Elite CPU Not Recognised by ONNX Runtime
 
+**Status:** Open
 **Severity:** Warning (non-blocking)
 **Component:** ONNX Runtime / cpuinfo
 **Reproduction:** Every Foundry Local service start on Snapdragon X Elite hardware
@@ -26,6 +29,7 @@ onnxruntime cpuid_info warning: Unknown CPU vendor. cpuinfo_vendor value: 0
 
 ## 2. QNN Execution Provider Backend Path Warning
 
+**Status:** Open (partially mitigated — QNN EP autoregisters as of CLI v0.8.117)
 **Severity:** Warning (non-blocking)
 **Component:** ONNX Runtime QNN Execution Provider
 **Reproduction:** Loading any model on Snapdragon hardware with NPU support
@@ -46,10 +50,13 @@ Some nodes were not assigned to the preferred execution providers which may or m
 
 **Expected:** Either suppress the warning when default fallback is the intended behaviour, or document which backend is actually selected.
 
+> **Update (2026-03-11):** As of CLI v0.8.117, QNN EP autoregistration succeeds (`Successfully downloaded and registered the following EPs: QNNExecutionProvider`). The backend path warning still appears during model loads but the NPU is functional.
+
 ---
 
 ## 3. HTTP 500 Internal Server Error During Sustained LLM Inference
 
+**Status:** Open
 **Severity:** Critical
 **Component:** Foundry Local inference server
 **Reproduction:** Run the evaluation framework (`dotnet run eval`) — crashes partway through the second prompt variant after ~8-10 sequential completions
@@ -69,36 +76,9 @@ Status: 500 (Internal Server Error)
 
 ---
 
-## 4. OGA Memory Leak — Model and Tokenizer Instances Not Disposed
+## 4. SingleAgent NullReferenceException on First Run
 
-**Severity:** Warning
-**Component:** ONNX GenAI Runtime (OGA)
-**Reproduction:** Run any example to completion — the leak message appears on process exit
-
-```
-OGA Error: 1 instances of struct Generators::Model were leaked.
-OGA Error: 1 instances of struct Generators::Tokenizer were leaked.
-    Please see the documentation for the API being used to ensure proper cleanup.
-```
-
-In the Whisper scenario, the leak count was higher:
-
-```
-OGA Error: 1 instances of struct Generators::Model were leaked.
-OGA Error: 2 instances of struct Generators::Tokenizer were leaked.
-```
-
-**Impact:** The Foundry Local SDK does not expose a `Dispose()` or `Unload()` method for models in the C# API. There is no documented way for application code to release these native resources.
-
-**Expected:** Either:
-- Expose `IDisposable`/`IAsyncDisposable` on the model or manager objects, or
-- Suppress the leak warnings when the SDK is managing the lifecycle, or
-- Document the proper cleanup pattern.
-
----
-
-## 5. SingleAgent NullReferenceException on First Run
-
+**Status:** Open (intermittent)
 **Severity:** Critical (crash)
 **Component:** Foundry Local C# SDK + Microsoft Agent Framework
 **Reproduction:** Run `dotnet run agent` — crashes immediately after model load
@@ -116,8 +96,9 @@ System.NullReferenceException: Object reference not set to an instance of an obj
 
 ---
 
-## 6. C# SDK Requires Explicit RuntimeIdentifier
+## 5. C# SDK Requires Explicit RuntimeIdentifier
 
+**Status:** Open (mitigated by comment in `csharp.csproj`)
 **Severity:** Documentation gap
 **Component:** `Microsoft.AI.Foundry.Local` NuGet package
 **Reproduction:** Create a .NET 8 project without `<RuntimeIdentifier>` in the `.csproj`
@@ -136,34 +117,9 @@ NETSDK1047: Assets file doesn't have a target for 'net8.0/win-arm64'.
 
 ---
 
-## 7. Whisper C# Sample Path Resolution Issue
+## 6. JavaScript Whisper — Last Audio File Returns Empty Transcription
 
-**Severity:** Minor (configuration)
-**Component:** Workshop sample code
-**Reproduction:** Run `dotnet run whisper` from a working directory different from the project root
-
-The samples directory path is resolved relative to `AppContext.BaseDirectory`:
-
-```
-Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "samples", "audio")
-```
-
-On a build with output in `bin/Debug/net8.0/win-arm64/`, this resolves correctly only when the directory hierarchy matches exactly. A clean build or different RID can change the output depth.
-
-First run output:
-```
-Samples directory not found: ...\bin\Debug\net8.0\win-arm64\..\..\..\..\samples\audio
-Run 'python samples/audio/generate_samples.py' first.
-```
-
-**Workaround:** After `foundry service stop` and re-running, the path resolved correctly. This may be related to build output path changes between clean and incremental builds.
-
-**Expected:** Use a more robust path resolution strategy or accept the samples directory as a command-line argument.
-
----
-
-## 8. JavaScript Whisper — Last Audio File Returns Empty Transcription
-
+**Status:** Open
 **Severity:** Minor
 **Component:** JavaScript Whisper implementation (`foundry-local-whisper.mjs`)
 **Reproduction:** Run `node foundry-local-whisper.mjs` — the 5th audio file (`zava-workshop-setup.wav`) returns an empty transcription
@@ -182,8 +138,9 @@ All other 4 files transcribed correctly. The same file transcribed successfully 
 
 ---
 
-## 9. C# SDK Only Ships net8.0 — No Official .NET 9 or .NET 10 Target
+## 7. C# SDK Only Ships net8.0 — No Official .NET 9 or .NET 10 Target
 
+**Status:** Open
 **Severity:** Documentation gap
 **Component:** `Microsoft.AI.Foundry.Local` NuGet package v0.9.0
 **Install command:** `dotnet add package Microsoft.AI.Foundry.Local`
@@ -218,8 +175,9 @@ The net8.0 assembly loads on newer runtimes through .NET's forward-compatibility
 
 ---
 
-## 10. JavaScript ChatClient Streaming Uses Callbacks, Not Async Iterators
+## 8. JavaScript ChatClient Streaming Uses Callbacks, Not Async Iterators
 
+**Status:** Open
 **Severity:** Documentation gap
 **Component:** `foundry-local-sdk` JavaScript v0.9.x — `ChatClient.completeStreamingChat()`
 
@@ -241,8 +199,9 @@ await chatClient.completeStreamingChat(messages, (chunk) => {
 
 ---
 
-## 11. Tool Calling — Model May Not Support All tool_choice Options
+## 9. Tool Calling — Model May Not Support All tool_choice Options
 
+**Status:** Open
 **Severity:** Minor
 **Component:** Local inference server
 **Reproduction:** Use `tool_choice: "required"` or a specific function name with smaller models
@@ -261,6 +220,7 @@ Some tool calling models (particularly qwen2.5-0.5b) may not fully support all `
 |-----------|---------|
 | OS | Windows 11 ARM64 |
 | Hardware | Snapdragon X Elite (X1E78100) |
+| Foundry Local CLI | 0.8.117 |
 | Foundry Local SDK (C#) | 0.9.0 |
 | Microsoft.Agents.AI.OpenAI | 1.0.0-rc3 |
 | OpenAI C# SDK | 2.9.0 |

@@ -149,6 +149,9 @@ def main():
             print(chunk.choices[0].delta.content, end="", flush=True)
     print()
 
+    # Cleanup: unload the model to release resources
+    manager.unload_model(alias)
+
 
 if __name__ == "__main__":
     main()

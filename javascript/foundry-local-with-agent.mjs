@@ -86,6 +86,10 @@ async function main() {
   // Run the agent
   const result = await agent.run("Tell me a joke about a pirate.");
   console.log(result.text);
+
+  // Cleanup: unload the model to release resources
+  await model.unload();
+  await manager.stopWebService();
 }
 
 main();

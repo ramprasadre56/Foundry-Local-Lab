@@ -51,3 +51,7 @@ for await (const chunk of stream) {
   }
 }
 console.log(); // newline at end
+
+// Cleanup: unload the model to release resources
+await model.unload();
+await manager.stopWebService();

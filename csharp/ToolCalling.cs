@@ -121,6 +121,9 @@ public static class ToolCalling
         {
             Console.WriteLine($"Response: {completion.Value.Content[0].Text}");
         }
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 
     private static string ExecuteTool(string name, string argsJson)

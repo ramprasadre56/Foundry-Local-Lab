@@ -330,6 +330,10 @@ async function main() {
   console.log(`\n${"=".repeat(60)}`);
   console.log("  Evaluation complete!");
   console.log("=".repeat(60));
+
+  // Cleanup: unload the model to release resources
+  await model.unload();
+  await manager.stopWebService();
 }
 
 main();

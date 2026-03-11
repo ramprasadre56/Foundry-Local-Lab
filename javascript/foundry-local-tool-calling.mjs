@@ -118,3 +118,7 @@ if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
   // Model answered directly without calling tools
   console.log("Response:", assistantMessage.content);
 }
+
+// Cleanup: unload the model to release resources
+await model.unload();
+await manager.stopWebService();

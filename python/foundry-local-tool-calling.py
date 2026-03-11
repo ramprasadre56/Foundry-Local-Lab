@@ -114,3 +114,6 @@ if assistant_message.tool_calls:
 else:
     # Model answered directly without calling tools
     print("Response:", assistant_message.content)
+
+# Cleanup: unload the model to release resources
+manager.unload_model(alias)

@@ -115,5 +115,8 @@ public static class MultiAgent
 
         Console.WriteLine(new string('=', 60));
         Console.WriteLine("Multi-agent workflow complete!");
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 }

@@ -86,3 +86,7 @@ for (const audioPath of audioFiles) {
 }
 
 console.log(`Done — transcribed ${audioFiles.length} file(s).`);
+
+// Cleanup: unload the model to release resources
+await whisperModel.unload();
+await manager.stopWebService();

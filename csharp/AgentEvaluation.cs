@@ -332,5 +332,8 @@ public static class AgentEvaluation
         Console.WriteLine($"\n{new string('=', 60)}");
         Console.WriteLine("  Evaluation complete!");
         Console.WriteLine(new string('=', 60));
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 }

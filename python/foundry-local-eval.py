@@ -281,6 +281,9 @@ def main():
     print("  Evaluation complete!")
     print("=" * 60)
 
+    # Cleanup: unload the model to release resources
+    manager.unload_model(alias)
+
 
 if __name__ == "__main__":
     main()

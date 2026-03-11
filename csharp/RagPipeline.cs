@@ -154,5 +154,8 @@ public static class RagPipeline
             }
         }
         Console.WriteLine();
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
     }
 }

@@ -13,7 +13,7 @@ public static class WhisperTranscription
     public static async Task RunAsync(string[] args)
     {
         var alias = "whisper-medium";
-        var samplesDir = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "samples", "audio");
+        var samplesDir = FindSamplesDirectory();
 
         // Determine which files to transcribe
         string[] audioFiles;
@@ -100,5 +100,32 @@ public static class WhisperTranscription
         }
 
         Console.WriteLine($"Done — transcribed {audioFiles.Length} file(s).");
+
+        // Cleanup: unload the model to release resources
+        await model.UnloadAsync(default);
+    }
+
+    /// <summary>
+    /// Walk up from both AppContext.BaseDirectory and the current directory
+    /// to locate the samples/audio folder, handling varying build output depths.
+    /// </summary>
+    private static string FindSamplesDirectory()
+    {
+        var candidates = new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
+        foreach (var start in candidates)
+        {
+            var dir = start;
+            for (var i = 0; i < 8; i++)
+            {
+                var samplesPath = Path.Combine(dir, "samples", "audio");
+                if (Directory.Exists(samplesPath))
+                    return samplesPath;
+
+                var parent = Directory.GetParent(dir);
+                if (parent == null) break;
+                dir = parent.FullName;
+            }
+        }
+        return Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "samples", "audio");
     }
 }
